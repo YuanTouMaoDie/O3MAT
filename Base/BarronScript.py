@@ -106,7 +106,7 @@ def start_period_averaged_data_fusion(model_file, monitor_file, file_path, dict_
     proj = pyproj.Proj(ds_model.crs_proj4)
     df_obs = pd.read_csv(monitor_file)
     #控制变量
-    df_obs = df_obs[df_obs['Site'] != 60650008]
+    # df_obs = df_obs[df_obs['Site'] != 60650008]
     nn = nna_methods.NNA(method="voronoi", k=30)
     df_all_daily_prediction = None
     df_obs["Date"] = pd.to_datetime(df_obs["Date"])
@@ -155,8 +155,6 @@ def start_period_averaged_data_fusion(model_file, monitor_file, file_path, dict_
                 COL=df_avg_obs["x"].to_xarray(),
                 method="nearest"
             )
-            #Test
-            df_avg_obs["Conc"] = 20
             df_avg_obs["bias"] = df_avg_obs["mod"] - df_avg_obs["Conc"]
             df_avg_obs["r_n"] = df_avg_obs["Conc"] / df_avg_obs["mod"]
             df_prediction = ds_avg_model[["ROW", "COL"]].to_dataframe().reset_index()
@@ -424,43 +422,43 @@ if __name__ == "__main__":
     # monitor_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2011.csv"
     monitor_file = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/ds.input.aqs.o3.2011_FilterLatLon.csv"
 
-#     # 测试 先融合后均值
-# # 测试 先融合后均值
-#     daily_output_path = os.path.join(save_path, "BarronScriptHarvard_ALL_2011_FtAdaily.csv")
-#     start_daily_data_fusion(
-#         model_file,
-#         monitor_file,
-#         daily_output_path,
-#         monitor_pollutant="Conc",
-#         model_pollutant="MDA8_O3"
-#     )
-    # daily_output_path = os.path.join(save_path, "BarronScript_ALL_2011_FtAdaily.csv")
-    # # 动态生成先融合后均值的指标文件名称
-    # daily_index_file_name = daily_output_path.replace("FtAdaily.csv", "FtAIndex.csv")
-    # daily_data_fusion_file = daily_output_path
-    # daily_data=pd.read_csv(daily_data_fusion_file)
-    # 将先融合后均值的结果处理为相应的指标
-    # daily_file_list = save_daily_data_fusion_to_metrics(daily_data, save_path, project_name="BarronHarvard_ALL_2011_FtAIndex")
-
-
-    # 测试 先均值后融合
-    seasonal_output_path = os.path.join(save_path, "Test_FilterlatLon.csv")
-    start_period_averaged_data_fusion(
+    # 测试 先融合后均值
+# 测试 先融合后均值
+    daily_output_path = os.path.join(save_path, "BarronScriptHarvard_ALL_2011_FtAdaily.csv")
+    start_daily_data_fusion(
         model_file,
         monitor_file,
-        seasonal_output_path,
+        daily_output_path,
         monitor_pollutant="Conc",
-        model_pollutant="MDA8_O3",
-        dict_period={
-            "DJF_2011": ["2011-12-01", "2011-02-28"],
-            "MAM_2011": ["2011-03-01", "2011-05-31"],
-            "JJA_2011": ["2011-06-01", "2011-08-31"],
-            "SON_2011": ["2011-09-01", "2011-11-30"],
-            # "Annual_2011": ["2011-01-01", "2011-12-31"],
-            # "Apr-Sep_2011": ["2011-04-01", "2011-09-30"]
-        }
+        model_pollutant="MDA8_O3"
     )
-    print("Done!")
+    daily_output_path = os.path.join(save_path, "BarronScript_ALL_2011_FtAdaily.csv")
+    # 动态生成先融合后均值的指标文件名称
+    daily_index_file_name = daily_output_path.replace("FtAdaily.csv", "FtAIndex.csv")
+    daily_data_fusion_file = daily_output_path
+    daily_data=pd.read_csv(daily_data_fusion_file)
+    # 将先融合后均值的结果处理为相应的指标
+    daily_file_list = save_daily_data_fusion_to_metrics(daily_data, save_path, project_name="BarronHarvard_ALL_2011_FtAIndex")
+
+
+    # # 测试 先均值后融合
+    # seasonal_output_path = os.path.join(save_path, "Test_FilterlatLon.csv")
+    # start_period_averaged_data_fusion(
+    #     model_file,
+    #     monitor_file,
+    #     seasonal_output_path,
+    #     monitor_pollutant="Conc",
+    #     model_pollutant="MDA8_O3",
+    #     dict_period={
+    #         "DJF_2011": ["2011-12-01", "2011-02-28"],
+    #         "MAM_2011": ["2011-03-01", "2011-05-31"],
+    #         "JJA_2011": ["2011-06-01", "2011-08-31"],
+    #         "SON_2011": ["2011-09-01", "2011-11-30"],
+    #         # "Annual_2011": ["2011-01-01", "2011-12-31"],
+    #         # "Apr-Sep_2011": ["2011-04-01", "2011-09-30"]
+    #     }
+    # )
+    # print("Done!")
 
     # seasonal_output_path = os.path.join(save_path, "BarronHarvard_ALL_2011_AtFtop.csv")
     # start_top_Av_DF(

@@ -22,7 +22,7 @@ def extract_nc_to_dataframe(nc_file, enable_metrics=False, save_path=None, proje
         date_time = f.dimensions['DATE-TIME']  # 获取时间
 
         # 获取变量数据
-        mda_o3 = f.variables['aVNA_Y'][:]  # 获取MDA_O3变量数据，四维数组 (TSTEP, LAY, ROW, COL),Model中的是O3_MDA8
+        mda_o3 = f.variables['MDA_O3'][:]  # 获取MDA_O3变量数据，四维数组 (TSTEP, LAY, ROW, COL),Model中的是O3_MDA8
         # mda_o31 = f.variables['eVNA_Y'][:]  # 获取MDA_O3变量数据，四维数组 (TSTEP, LAY, ROW, COL),Model中的是O3_MDA8
         tflag = f.variables['TFLAG'][:]  # 获取TFLAG时间数据
 
@@ -52,19 +52,18 @@ def extract_nc_to_dataframe(nc_file, enable_metrics=False, save_path=None, proje
         data = {
             'ROW': [],
             'COL': [],
-            'avna_ozone': [],
-            # 'evna_ozone': [],
+            'ds_ozone': [],
             'Timestamp': []
         }
 
         for i in tqdm(range(tstep)):
             if dates[i] not in july_dates:
-                continue  # 跳过非7月的数据
+                continue 
             for row in range(rows):
                 for col in range(cols):
                     data['ROW'].append(row + 1)  # 行和列从1开始
                     data['COL'].append(col + 1)
-                    data['avna_ozone'].append(mda_o3[i, 0, row, col].item())  # 使用 .item() 获取标量值
+                    data['ds_ozone'].append(mda_o3[i, 0, row, col].item())  # 使用 .item() 获取标量值
                     # data['evna_ozone'].append(mda_o31[i, 0, row, col].item())  # 使用 .item() 获取标量值
                     data['Timestamp'].append(dates[i])  # 对应的日期
 
@@ -100,26 +99,19 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     # 初始化一个空的 DataFrame 来存储所有指标
     all_metrics = []
 
-    # 98th percentile of MDA8 ozone concentration
-    df_data_98th_percentile = df_data.groupby(["ROW", "COL"]).agg(
-        {'avna_ozone': lambda x: x.quantile(0.98)}
-    ).reset_index()
-    df_data_98th_percentile["Period"] = f"98th"
-    all_metrics.append(df_data_98th_percentile)
-
     # top-10 average of MDA8 ozone days
     def top_10_average(series):
         return series.nlargest(10).mean()
 
     df_data_top_10_avg = df_data.groupby(["ROW", "COL"]).agg(
-        {'avna_ozone': top_10_average}
+        {'ds_ozone': top_10_average}
     ).reset_index()
     df_data_top_10_avg["Period"] = f"top-10"
     all_metrics.append(df_data_top_10_avg)
 
     # Annual average of MDA8
     df_data_annual_avg = df_data.groupby(["ROW", "COL", 'Year']).agg(
-        {'avna_ozone': 'mean'}
+        {'ds_ozone': 'mean'}
     ).reset_index()
     df_data_annual_avg["Period"] = f"Annual"
     all_metrics.append(df_data_annual_avg)
@@ -128,7 +120,7 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     summer_months = [4, 5, 6, 7, 8, 9]
     df_data_summer = df_data[df_data['Month'].isin(summer_months)]
     df_data_summer_avg = df_data_summer.groupby(["ROW", "COL"]).agg(
-        {'avna_ozone': 'mean'}
+        {'ds_ozone': 'mean'}
     ).reset_index()
     df_data_summer_avg["Period"] = f"Apr-Sep"
     all_metrics.append(df_data_summer_avg)
@@ -143,7 +135,7 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     for season, months in seasons.items():
         df_data_season = df_data[df_data['Month'].isin(months)]
         df_data_season_avg = df_data_season.groupby(["ROW", "COL"]).agg(
-            {'avna_ozone': 'mean'}
+            {'ds_ozone': 'mean'}
         ).reset_index()
         df_data_season_avg["Period"] = f"{season}"
         all_metrics.append(df_data_season_avg)
@@ -161,7 +153,7 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
 
 # 输入.nc文件路径
 # nc_file = '/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc'  # 请替换为实际路径
-nc_file = '/backupdata/data_EPA/EQUATES/data_fusion_Barron/HR2DAY_LST_ACONC_EQUATES_v532_12US1_O3MDA8_VNA_2011.nc'  # 请替换为实际路径
+nc_file = '/backupdata/data_EPA/EQUATES/DS_data/CMAQv532_DSFusion_12US1_2011.nc'  # 请替换为实际路径
 
 # 提取数据并保存
 enable_metrics = True  # 设置为 True 开启指标计算功能

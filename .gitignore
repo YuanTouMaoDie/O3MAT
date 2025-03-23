@@ -1,2 +1,4 @@
-output/
 __pycache__/
+
+#输出文件忽略
+output/
