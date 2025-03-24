@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 
 # 数据文件路径
-data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/BarronScript_ALL_2011_FtAIndex_CONUS.csv'
+data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_CONUS_dailyIntometrics.csv'
 
 # 读取数据文件
 df = pd.read_csv(data_path)
