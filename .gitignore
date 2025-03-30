@@ -2,3 +2,4 @@ __pycache__/
 
 #输出文件忽略
 output/
+*.log

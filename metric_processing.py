@@ -3,7 +3,7 @@ import numpy as np
 
 
 def calculate_w126_metric(df_data):
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model', 'harvard_ml', 'ds_ozone']
+    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     # 转换单位
     for col in ozone_columns:
         df_data[col] = df_data[col] / 1000
@@ -11,7 +11,7 @@ def calculate_w126_metric(df_data):
     df_data['Year'] = df_data['Timestamp'].dt.year
     df_data['Month'] = df_data['Timestamp'].dt.month
     df_data['hour'] = df_data['Timestamp'].dt.hour
-    df_daytime = df_data[(df_data['hour'] >= 8) & (df_data['hour'] <= 20)]
+    df_daytime = df_data[(df_data['hour'] >= 8) & (df_data['hour'] < 20)]
     w126_metrics = []
     for col in ozone_columns:
         df_daytime[f'weighted_{col}'] = df_daytime[col] / (1 + 4403 * np.exp(-126 * df_daytime[col]))
@@ -42,7 +42,7 @@ def calculate_w126_metric(df_data):
 def calculate_mda8(df):
     df['Timestamp'] = pd.to_datetime(df['Timestamp'])
     df['Date'] = df['Timestamp'].dt.date
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model', 'harvard_ml', 'ds_ozone']
+    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     mda8_data = []
     for (row, col, date), group in df.groupby(['ROW', 'COL', 'Date']):
         daily_mda8 = {'ROW': row, 'COL': col, 'Date': date}
@@ -55,6 +55,9 @@ def calculate_mda8(df):
 
 def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     mda8_df = calculate_mda8(df_data)
+    mda8_df['Year'] = pd.to_datetime(mda8_df['Date']).dt.year
+    mda8_df['Month'] = pd.to_datetime(mda8_df['Date']).dt.month
+
     mda8_output_file = f'{save_path}/{project_name}_mda8.csv'
     mda8_df.to_csv(mda8_output_file, index=False)
 
@@ -63,23 +66,21 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     def top_10_average(series):
         return series.nlargest(10).mean()
 
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model', 'harvard_ml', 'ds_ozone']
+    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     all_metrics = []
-    df_data['Year'] = pd.to_datetime(df_data['Timestamp']).dt.year
-    df_data['Month'] = pd.to_datetime(df_data['Timestamp']).dt.month
     for period in ['top-10', 'Annual', 'Apr-Sep', 'DJF', 'MAM', 'JJA', 'SON']:
         if period == 'top-10':
             aggregator = top_10_average
             group_cols = ['ROW', 'COL']
-            temp_df = df_data
+            temp_df = mda8_df
         elif period == 'Annual':
             aggregator = 'mean'
             group_cols = ['ROW', 'COL', 'Year']
-            temp_df = df_data
+            temp_df = mda8_df
         elif period == 'Apr-Sep':
             aggregator = 'mean'
             group_cols = ['ROW', 'COL']
-            temp_df = df_data[df_data['Month'].isin([4, 5, 6, 7, 8, 9])]
+            temp_df = mda8_df[mda8_df['Month'].isin([4, 5, 6, 7, 8, 9])]
         elif period in ['DJF', 'MAM', 'JJA', 'SON']:
             aggregator = 'mean'
             group_cols = ['ROW', 'COL']
@@ -89,7 +90,7 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
                 'JJA': [6, 7, 8],
                 'SON': [9, 10, 11]
             }
-            temp_df = df_data[df_data['Month'].isin(season_months[period])]
+            temp_df = mda8_df[mda8_df['Month'].isin(season_months[period])]
         for col in ozone_columns:
             agg_df = temp_df.groupby(group_cols).agg({col: aggregator}).reset_index()
             agg_df['Period'] = f'{period}_{col}'
@@ -119,14 +120,15 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     final_df.to_csv(output_file, index=False)
     return [output_file, mda8_output_file]
 
+
 if __name__ == "__main__":
     # 读取输入文件
-    file_path = "2011_SixDataset_Hourly.csv"
+    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly.csv"
     df = pd.read_csv(file_path)
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"
-    project_name = "2011_metrics"
+    project_name = "2011_Hourlymetrics"
 
     # 调用函数计算指标并保存结果
     output_files = save_daily_data_fusion_to_metrics(df, save_path, project_name)

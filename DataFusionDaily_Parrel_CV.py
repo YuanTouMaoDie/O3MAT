@@ -59,7 +59,6 @@ def start_daily_data_fusion(model_file, monitor_file, cross_validation_file, fil
 
             # 提取和交叉验证表站点一样的数据
             df_daily_obs = df_daily_obs[df_daily_obs["Site"].isin(df_daily_cv["Site"])]
-            print(f"Shape of df_daily_obs: {df_daily_obs.shape}")
 
             if isinstance(ds_model['TSTEP'].values[0], np.int64):
                 timeIndex = get_day_of_year(date) - 1
@@ -88,14 +87,6 @@ def start_daily_data_fusion(model_file, monitor_file, cross_validation_file, fil
                 df_train = df_daily_obs[df_daily_obs["Site"].isin(train_sites)]
                 df_test = df_daily_obs[df_daily_obs["Site"].isin(test_sites)]
 
-                if df_train.empty:
-                    print(f"No training data for CV group {cv_group} on {date}. Skipping prediction.")
-                    continue
-
-                if df_test.empty:
-                    print(f"No test data for CV group {cv_group} on {date}. Skipping prediction.")
-                    continue
-
                 # 计算训练集的 bias 和 r_n
                 df_train.loc[:, "bias"] = df_train["mod"] - df_train["Conc"]
                 df_train.loc[:, "r_n"] = df_train["Conc"] / df_train["mod"]
@@ -106,11 +97,10 @@ def start_daily_data_fusion(model_file, monitor_file, cross_validation_file, fil
                     df_train[[monitor_pollutant, "mod", "bias", "r_n"]]
                 )
 
-                # 并行计算部分
-                njobs = 40  # 使用所有CPU核心进行并行计算
                 test_data = df_test[["COL", "ROW"]].values
-                print("test_data 的内容是: ", test_data)  # 添加这一行打印 test_data 的内容
 
+                #并行计算，限定核心不能超过数据，否则报错
+                njobs = min(len(df_test), 88)
                 zdf = nn.predict(test_data, njobs=njobs)
 
                 # 将预测结果直接添加到 df_test 中
@@ -158,7 +148,7 @@ def start_daily_data_fusion(model_file, monitor_file, cross_validation_file, fil
     df_all_daily_prediction["Site"] = pd.Categorical(df_all_daily_prediction["Site"], categories=site_order, ordered=True)
     df_all_daily_prediction = df_all_daily_prediction.sort_values(by=["Date", "Site"])
 
-    df_all_daily_prediction = df_all_daily_prediction[["Date", "Site", "Lat", "Lon", "Conc", "CVgroup", "vna_ozone", "evna_ozone", "avna_ozone","ds_ozone", "ROW", "COL"]]
+    df_all_daily_prediction = df_all_daily_prediction[["Date", "Site", "Lat", "Lon", "Conc", "CVgroup","model","vna_ozone", "evna_ozone", "avna_ozone","ds_ozone", "ROW", "COL"]]
     df_all_daily_prediction.to_csv(file_path, index=False)
     print(f"Data Fusion for all dates is done, the results are saved to {file_path}")
     return df_all_daily_prediction
