@@ -1,10 +1,26 @@
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
+import dask.dataframe as dd
 
+# 定义需要读取的列
+usecols = ['ROW', 'COL', 'Timestamp', 'vna_ozone', 'avna_ozone', 'evna_ozone', 'model']
 
+# 定义每列的数据类型
+dtype = {
+    'ROW': 'int32',
+    'COL': 'int32',
+    'Timestamp': 'object',
+    'vna_ozone': 'float32',
+    'avna_ozone': 'float32',
+    'evna_ozone': 'float32',
+    'model': 'float32'
+}
+
+@delayed
 def calculate_w126_metric(df_data):
     print("开始计算 W126 指标...")
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone','model']
+    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     # 转换单位
     df_data[ozone_columns] = df_data[ozone_columns] / 1000
     df_data['Timestamp'] = pd.to_datetime(df_data['Timestamp'])
@@ -17,8 +33,8 @@ def calculate_w126_metric(df_data):
     for col in ozone_columns:
         df_daytime[f'weighted_{col}'] = df_daytime[col] / (1 + 4403 * np.exp(-126 * df_daytime[col]))
         df_monthly = df_daytime.groupby(['Year', 'Month']).agg(
-            {f'weighted_{col}':'sum', col: 'count'}).reset_index()
-        df_monthly.columns = ['year','month', f'monthly_w126_{col}', f'daytime_hours_count_{col}']
+            {f'weighted_{col}': 'sum', col: 'count'}).reset_index()
+        df_monthly.columns = ['year', 'month', f'monthly_w126_{col}', f'daytime_hours_count_{col}']
         total_possible_daytime_hours = 31 * 12
         df_monthly[f'available_ratio_{col}'] = df_monthly[f'daytime_hours_count_{col}'] / total_possible_daytime_hours
         df_monthly = df_monthly[df_monthly[f'available_ratio_{col}'] >= 0.75]
@@ -40,12 +56,12 @@ def calculate_w126_metric(df_data):
     print("W126 指标计算完成.")
     return pd.DataFrame(w126_metrics)
 
-
+@delayed
 def calculate_mda8(df):
     print("开始计算 MDA8 指标...")
     df['Timestamp'] = pd.to_datetime(df['Timestamp'])
     df['Date'] = df['Timestamp'].dt.date
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone','model']
+    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     mda8_data = []
     grouped = df.groupby(['ROW', 'COL', 'Date'])
     for (row, col, date), group in grouped:
@@ -57,10 +73,34 @@ def calculate_mda8(df):
     return pd.DataFrame(mda8_data)
 
 
-def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
+def save_daily_data_fusion_to_metrics(save_path, project_name, file_path):
     print("开始保存每日数据融合指标...")
-    df_data['Timestamp'] = pd.to_datetime(df_data['Timestamp'])
-    mda8_df = calculate_mda8(df_data)
+
+    # 使用 dask 并行读取 CSV 文件
+    dask_df = dd.read_csv(file_path, usecols=usecols, dtype=dtype)
+
+    # 获取分块数量
+    total_chunks = len(dask_df.divisions)
+
+    df_parts = []
+
+    # 使用 tqdm 显示进度条
+    with tqdm(total=total_chunks, desc="Reading CSV file") as pbar:
+        for i in range(total_chunks - 1):  # 修改循环范围
+            chunk = dask_df.partitions[i].compute()
+            df_parts.append(chunk)
+            pbar.update(1)
+
+    # 处理最后一个分区
+    if total_chunks > 0:
+        last_chunk = dask_df.partitions[total_chunks - 1].compute()
+        df_parts.append(last_chunk)
+        pbar.update(1)
+
+    df = pd.concat(df_parts, ignore_index=True)
+
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+    mda8_df = calculate_mda8(df)
     mda8_df['Year'] = mda8_df['Date'].apply(lambda x: x.year)
     mda8_df['Month'] = mda8_df['Date'].apply(lambda x: x.month)
 
@@ -68,13 +108,13 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     mda8_df.to_csv(mda8_output_file, index=False)
     print(f"MDA8 数据已保存到: {mda8_output_file}")
 
-    w126_metric_df = calculate_w126_metric(df_data)
+    w126_metric_df = calculate_w126_metric(df)
     print(f"W126 指标数据已计算并准备处理.")
 
     def top_10_average(series):
         return series.nlargest(10).mean()
 
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone','model']
+    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     all_metrics = []
     season_months = {
         'DJF': [12, 1, 2],
@@ -128,14 +168,13 @@ if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
     file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly.csv"
-    df = pd.read_csv(file_path)
-    print("输入文件读取完成.")
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"
     project_name = "2011_Hourlymetrics"
 
     # 调用函数计算指标并保存结果
-    output_files = save_daily_data_fusion_to_metrics(df, save_path, project_name)
+    output_files = save_daily_data_fusion_to_metrics(save_path, project_name, file_path)
     print(f'指标文件已保存到: {output_files[0]}')
     print(f'MDA8 文件已保存到: {output_files[1]}')
+    
