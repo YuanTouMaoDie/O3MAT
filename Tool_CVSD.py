@@ -1,13 +1,15 @@
 import pandas as pd
 
 # 数据文件路径
-data_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Metrics.csv"
+data_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_W126_1.csv"
 
 # 读取数据
 df = pd.read_csv(data_path)
 
 # 假设参与计算的列，你需要根据实际情况修改
-columns_to_calculate = ['model','vna_ozone', 'evna_ozone', 'avna_ozone','ds_ozone','harvard_ml']
+# columns_to_calculate = ['model','vna_ozone', 'evna_ozone', 'avna_ozone','ds_ozone','harvard_ml']
+#colums_W126
+columns_to_calculate = ['model','vna_ozone', 'evna_ozone', 'avna_ozone']
 
 # 用于存储结果的数据列表
 results = []
@@ -40,5 +42,5 @@ result_df = pd.DataFrame(results, columns=['ROW', 'COL', 'SD', 'CV', 'Period'])
 print(result_df)
 
 # 如果需要保存结果到文件
-result_df.to_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_CVSD.csv', index=False)
+result_df.to_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_W126_CVSD.csv', index=False)
     

@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 
 # 数据文件路径
-data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_CVSD.csv'
+data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Daily_Metrics.csv'
 
 # 读取数据文件
 df = pd.read_csv(data_path)
@@ -12,8 +12,8 @@ df = pd.read_csv(data_path)
 target_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep']
 
 # 指定要提取的列
-# target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'harvard_ml', 'ds_ozone']
-target_columns = ['SD']
+target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'harvard_ml', 'ds_ozone']
+# target_columns = ['SD']
 
 # 提取对应 Period 和列的数据
 extracted_data = df[df['Period'].isin(target_periods)][target_columns]

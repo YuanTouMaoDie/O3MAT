@@ -172,9 +172,9 @@ if __name__ == "__main__":
 
     # 指定日期范围
     start_date = '2011/01/01 00:00'
-    end_date = '2011/12/31 23:00'
+    end_date = '2011/01/01 23:00'
 
-    daily_output_path = os.path.join(save_path, "2011_SixDataset_Hourly.csv")
+    daily_output_path = os.path.join(save_path, "2011_SixDataset_Hourly_20110101.csv")
     start_hourly_data_fusion(
         model_files,
         monitor_file,

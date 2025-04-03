@@ -231,9 +231,9 @@ if __name__ == "__main__":
 
     # 指定日期范围
     start_date = '2011-01-02'
-    end_date = '2011-01-02'
+    end_date = '2011-12-31'
 
-    daily_output_path = os.path.join(save_path, "2011_SixDataset_CONUS_0102.csv")
+    daily_output_path = os.path.join(save_path, "Test.csv")
     start_daily_data_fusion(
         model_file,
         monitor_file,
