@@ -109,8 +109,8 @@ if __name__ == "__main__":
     lat_lon_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2011.csv"
 
     # 指定日期范围
-    start_date = '2011/12/01 00:00'
-    end_date = '2011/12/04 23:00'
+    start_date = '2012/01/01 01:00'
+    end_date = '2012/01/01 04:00'
 
     daily_output_path = os.path.join(save_path, "Test.csv")
     start_hourly_data_fusion(

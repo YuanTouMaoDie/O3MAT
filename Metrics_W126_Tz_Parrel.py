@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
-from dask import delayed, compute
+from concurrent.futures import ThreadPoolExecutor
 import numba
 
 
@@ -34,7 +33,6 @@ def sliding_window_sum(arr, window_size):
     return result
 
 
-@delayed
 def calculate_single_w126(group, col_name):
     values = group[col_name].values
     weighted_values = calculate_weighted_values(values)
@@ -68,69 +66,108 @@ def calculate_single_w126(group, col_name):
     return np.nan
 
 
-@delayed
+def convert_all_to_local_time(df_data, timezone_df):
+    """
+    将所有数据的时间转换为本地时间，并添加年、月、小时列
+    """
+    # 合并数据
+    merged_df = pd.merge(df_data, timezone_df, on=['ROW', 'COL'], how='left')
+    # 转换时间戳
+    merged_df['Timestamp'] = pd.to_datetime(merged_df['Timestamp'])
+    # 根据各个网格所在的时区将UTC转为相应的localtime, like ST = UTC + -5
+    merged_df['local_time'] = merged_df['Timestamp'] + pd.to_timedelta(merged_df['gmt_offset'], unit='h')
+    # 添加年、月、小时列
+    merged_df['Year'] = merged_df['local_time'].dt.year
+    merged_df['Month'] = merged_df['local_time'].dt.month
+    merged_df['hour'] = merged_df['local_time'].dt.hour
+    return merged_df
+
+
+def calculate_w126_for_grid(grid_group, ozone_columns):
+    row_num, col_num = grid_group[0]
+    group = grid_group[1]
+    w126_metrics = {'ROW': row_num, 'COL': col_num, 'Period': 'W126'}
+    for col_name in ozone_columns:
+        result = calculate_single_w126(group, col_name)
+        w126_metrics[col_name] = result
+    return w126_metrics
+
+
 def calculate_w126_metric(df_data, save_path, project_name):
     print("开始计算 W126 指标...")
     ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
     # 转换单位，ppbv to ppm
     df_data[ozone_columns] = df_data[ozone_columns] / 1000
-    df_data['Timestamp'] = pd.to_datetime(df_data['Timestamp'])
-    df_data['Year'] = df_data['Timestamp'].dt.year
-    df_data['Month'] = df_data['Timestamp'].dt.month
-    df_data['hour'] = df_data['Timestamp'].dt.hour
-    df_daytime = df_data[(df_data['hour'] >= 8) & (df_data['hour'] < 20)]
+
+    # 根据localtime筛选
+    df_2011 = df_data[(df_data['Year'] == 2011)]
+    df_daytime = df_2011[(df_2011['hour'] >= 8) & (df_2011['hour'] < 20)]
+
+    grouped = df_daytime.groupby(['ROW', 'COL'])
+    num_grids = len(grouped)
+    print(f"总共需要处理 {num_grids} 个网格。")
 
     all_w126_metrics = []
-    grouped = df_daytime.groupby(['ROW', 'COL'])
-    for (row, col), group in tqdm(grouped, desc="Processing grids"):
-        tasks = []
-        for col_name in ozone_columns:
-            task = calculate_single_w126(group, col_name)
-            tasks.append(task)
+    with ThreadPoolExecutor() as executor:
+        futures = [executor.submit(calculate_w126_for_grid, grid_group, ozone_columns) for grid_group in grouped]
+        for future in futures:
+            all_w126_metrics.append(future.result())
 
-        results = compute(*tasks)
-        w126_metrics = {'ROW': row, 'COL': col, 'Period': 'W126'}
-        for col_name, result in zip(ozone_columns, results):
-            w126_metrics[col_name] = result
-
-        all_w126_metrics.append(w126_metrics)
+    print(f"已处理完 {num_grids} 个网格。")
 
     w126_df = pd.DataFrame(all_w126_metrics)
+
+    # 生成所有可能的 ROW 和 COL 组合,填充CONUS的值
+    all_rows = np.arange(1, 300)
+    all_cols = np.arange(1, 460)
+    index = pd.MultiIndex.from_product([all_rows, all_cols], names=['ROW', 'COL'])
+
+    full_df = pd.DataFrame(index=index).reset_index()
+    full_df['Period'] = 'W126'
+
+    # 合并计算结果
+    merged_df = pd.merge(full_df, w126_df, on=['ROW', 'COL', 'Period'], how='left')
+
     w126_output_file = f'{save_path}/{project_name}_W126_5Hours.csv'
-    w126_df[['ROW', 'COL', 'model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'Period']].to_csv(w126_output_file, index=False)
+    merged_df[['ROW', 'COL', 'model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'Period']].to_csv(w126_output_file,
+                                                                                                index=False)
     print(f"W126 指标数据已保存到: {w126_output_file}")
     print("W126 指标计算完成.")
-    return w126_df
+    return merged_df
 
 
-def save_w126_metrics(save_path, project_name, file_path):
+def save_w126_metrics(save_path, project_name, file_path, timezone_file):
     print("开始保存 W126 指标...")
 
     # 使用 dask 直接读取 CSV 文件
     dask_df = pd.read_csv(file_path, usecols=usecols, dtype=dtype)
+    timezone_df = pd.read_csv(timezone_file)
 
     print("文件读取完毕。")
 
-    # 延迟计算
-    w126_task = calculate_w126_metric(dask_df, save_path, project_name)
+    # 将所有数据转换为本地时间
+    local_df = convert_all_to_local_time(dask_df, timezone_df)
+    print("已完成时间转换为本地时间。")
 
-    # 并行计算 W126
-    w126_df = compute(w126_task)[0]
+    # 计算 W126
+    w126_df = calculate_w126_metric(local_df, save_path, project_name)
 
     print("W126 指标保存完成.")
-    return f'{save_path}/{project_name}_W126_True.csv'
+    return f'{save_path}/{project_name}_W126.csv'
 
 
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_True_5Hours.csv"
+    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly5Hours.csv"
+
+    # 读取时区偏移表
+    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/2011_ROWCOLRegion_Tz_CONUS_ST.csv'
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"
     project_name = "2011"
 
     # 调用函数计算指标并保存结果
-    output_file = save_w126_metrics(save_path, project_name, file_path)
+    output_file = save_w126_metrics(save_path, project_name, file_path, timezone_file)
     print(f'W126 指标文件已保存到: {output_file}')
-    

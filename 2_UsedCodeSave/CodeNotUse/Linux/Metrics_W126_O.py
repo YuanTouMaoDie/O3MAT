@@ -96,41 +96,52 @@ def calculate_w126_metric(df_data, save_path, project_name):
         all_w126_metrics.append(w126_metrics)
 
     w126_df = pd.DataFrame(all_w126_metrics)
-    w126_output_file = f'{save_path}/{project_name}_W126_5Hours.csv'
+    w126_output_file = f'{save_path}/{project_name}_W126.csv'
     w126_df[['ROW', 'COL', 'model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'Period']].to_csv(w126_output_file, index=False)
     print(f"W126 指标数据已保存到: {w126_output_file}")
     print("W126 指标计算完成.")
     return w126_df
 
 
-def save_w126_metrics(save_path, project_name, file_path):
+def save_w126_metrics(save_path, project_name, file_path1, file_path2):
     print("开始保存 W126 指标...")
 
-    # 使用 dask 直接读取 CSV 文件
-    dask_df = pd.read_csv(file_path, usecols=usecols, dtype=dtype)
+    # 使用 pandas 分别读取两个 CSV 文件
+    df1 = pd.read_csv(file_path1, usecols=usecols, dtype=dtype)
+    df2 = pd.read_csv(file_path2, usecols=usecols, dtype=dtype)
 
-    print("文件读取完毕。")
+    # 将 Timestamp 列转换为 datetime 类型
+    df1['Timestamp'] = pd.to_datetime(df1['Timestamp'])
+    df2['Timestamp'] = pd.to_datetime(df2['Timestamp'])
+
+    # 删除 df1 中 Timestamp 大于等于 2011-08-10 20:00 的数据行
+    df1 = df1[df1['Timestamp'] < '2011-08-10 20:00']
+
+    # 上下拼接两个 DataFrame
+    combined_df = pd.concat([df1, df2], ignore_index=True)
+
+    print("文件读取和拼接完毕。")
 
     # 延迟计算
-    w126_task = calculate_w126_metric(dask_df, save_path, project_name)
+    w126_task = calculate_w126_metric(combined_df, save_path, project_name)
 
     # 并行计算 W126
     w126_df = compute(w126_task)[0]
 
     print("W126 指标保存完成.")
-    return f'{save_path}/{project_name}_W126_True.csv'
+    return f'{save_path}/{project_name}_W126_TrueTrue.csv'
 
 
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_True_5Hours.csv"
+    file_path1 = "//DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_True_Duan.csv"
+    file_path2 = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_True_BU.csv"
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"
     project_name = "2011"
 
     # 调用函数计算指标并保存结果
-    output_file = save_w126_metrics(save_path, project_name, file_path)
+    output_file = save_w126_metrics(save_path, project_name, file_path1, file_path2)
     print(f'W126 指标文件已保存到: {output_file}')
-    

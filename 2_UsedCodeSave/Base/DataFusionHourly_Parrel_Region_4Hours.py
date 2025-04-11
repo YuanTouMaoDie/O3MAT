@@ -30,8 +30,8 @@ def start_hourly_data_fusion(model_files, monitor_file, region_table_file, file_
 
     # 处理日期范围
     if start_date and end_date:
-        start = pd.to_datetime(start_date)
-        end = pd.to_datetime(end_date)
+        start = pd.to_datetime(start_date.replace('/', '-'))  # 修改日期格式
+        end = pd.to_datetime(end_date.replace('/', '-'))  # 修改日期格式
         df_obs = df_obs[(df_obs['dateon'] >= start) & (df_obs['dateon'] <= end)]
 
     # 按站点和日期聚合
@@ -70,24 +70,34 @@ def start_hourly_data_fusion(model_files, monitor_file, region_table_file, file_
             # 将numpy.datetime64转换为datetime对象
             date = pd.Timestamp(date).to_pydatetime()
 
+            # 模型时间往后推4小时（美东时间转 UTC 时间）,对美西，时间会晚于美东一小时，因此要加1后推
+            adjusted_date = date + pd.Timedelta(hours=5)
+            print(f"监测日期（美东时间）: {date}，对应的模型日期（UTC 时间）: {adjusted_date}")
+
             # 获取当天的监测数据
             df_daily_obs = df_obs_grouped[df_obs_grouped["dateon"] == date].copy()
-            month = date.month
-            hour = date.hour
+            year = adjusted_date.year
+            month = adjusted_date.month
+
+            # 根据 UTC 时间的年份和月份选择模型文件
+            file_index = (year - 2011) * 12 + month - 1
+            if file_index < 0 or file_index >= len(ds_models):
+                print(f"警告：没有对应的模型文件，UTC 日期: {adjusted_date}，跳过处理。")
+                continue
 
             # 获取对应月份的模型数据
-            ds_model = ds_models[month - 1]
+            ds_model = ds_models[file_index]
             proj = pyproj.Proj(ds_model.crs_proj4)
 
             # 将经纬度转换为模型的x, y坐标
             df_daily_obs["x"], df_daily_obs["y"] = proj(df_daily_obs["Lon"], df_daily_obs["Lat"])
 
             # 获取当天的模型数据
-            tstep_value = pd.Timestamp(f"{date.year}-{month:02d}-{date.day:02d} {hour:02d}:00:00")
+            tstep_value = pd.Timestamp(f"{adjusted_date.year}-{month:02d}-{adjusted_date.day:02d} {adjusted_date.hour:02d}:00:00")
             try:
                 ds_hourly_model = ds_model.sel(TSTEP=tstep_value)
             except KeyError:
-                print(f"警告：日期 {date} 的模型数据缺失，跳过处理。")
+                print(f"警告：对应的 UTC 日期 {adjusted_date} 的模型数据缺失，跳过处理。")
                 continue
 
             # 选择模型数据，并计算偏差
@@ -126,7 +136,7 @@ def start_hourly_data_fusion(model_files, monitor_file, region_table_file, file_
             df_fusion = df_fusion.to_dataframe().reset_index()
             df_fusion["model"] = ds_hourly_model[model_pollutant][0].values.flatten()
             # 修改日期格式为带小时的形式
-            df_fusion["TSTEP"] = date.strftime('%Y-%m-%d %H:%M:%S')
+            df_fusion["TSTEP"] = adjusted_date.strftime('%Y-%m-%d %H:%M:%S')  # 使用调整后的 UTC 时间
             df_fusion["Timestamp"] = date.strftime('%Y-%m-%d %H:%M:%S')
             df_fusion["COL"] = (df_fusion["COL"] + 0.5).astype(int)
             df_fusion["ROW"] = (df_fusion["ROW"] + 0.5).astype(int)
@@ -163,7 +173,8 @@ if __name__ == "__main__":
         r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201109.nc",
         r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201110.nc",
         r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201111.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201112.nc"
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201112.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201201.nc"
     ]
 
     monitor_file = r"/backupdata/data_EPA/aq_obs/routine/2011/AQS_hourly_data_2011_LatLon.csv"
@@ -172,9 +183,9 @@ if __name__ == "__main__":
 
     # 指定日期范围
     start_date = '2011/01/01 00:00'
-    end_date = '2011/01/01 23:00'
+    end_date = '2011/12/31 23:00'
 
-    daily_output_path = os.path.join(save_path, "2011_SixDataset_Hourly_20110101.csv")
+    daily_output_path = os.path.join(save_path, "2011_SixDataset_Hourly_True_5Hours.csv")
     start_hourly_data_fusion(
         model_files,
         monitor_file,
@@ -186,3 +197,4 @@ if __name__ == "__main__":
         end_date=end_date,
     )
     print("Done!")
+    
