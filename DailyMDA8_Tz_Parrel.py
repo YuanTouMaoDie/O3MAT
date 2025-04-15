@@ -128,7 +128,7 @@ def calculate_w126_metric(df_data, save_path, project_name):
     # 合并计算结果
     merged_df = pd.merge(full_df, w126_df, on=['ROW', 'COL', 'Period'], how='left')
 
-    w126_output_file = f'{save_path}/{project_name}_W126_5Hours.csv'
+    w126_output_file = f'{save_path}/{project_name}_W126_5HoursNew.csv'
     merged_df[['ROW', 'COL', 'model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'Period']].to_csv(w126_output_file,
                                                                                                 index=False)
     print(f"W126 指标数据已保存到: {w126_output_file}")
@@ -159,7 +159,7 @@ def save_w126_metrics(save_path, project_name, file_path, timezone_file):
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly5Hours.csv"
+    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_ST.csv"
 
     # 读取时区偏移表
     timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/2011_ROWCOLRegion_Tz_CONUS_ST.csv'

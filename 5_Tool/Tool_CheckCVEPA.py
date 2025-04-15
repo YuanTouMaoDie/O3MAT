@@ -83,57 +83,57 @@
 # plt.show()
 
 
-# #从带 Is 的表中提取 Is = 1 的 ROW 和 COL，并将输入数据表中对应的 model 列设置为空值
-# import pandas as pd
-
-# try:
-#     # 读取带 Is 的表
-#     is_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/Region_CONUSHarvard.csv'
-#     df_is = pd.read_csv(is_table_path)
-
-#     # 读取输入数据表
-#     input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_W126.csv'
-#     df_input = pd.read_csv(input_table_path)
-
-#     # 从带 Is 的表中提取 Is = 1 的 ROW 和 COL
-#     filter_df = df_is[df_is['Is'] !=1][['ROW', 'COL']]
-
-#     # 根据提取的 ROW 和 COL 组合，将输入数据表中对应的 model 列设置为空值
-#     for _, row in filter_df.iterrows():
-#         df_input.loc[(df_input['ROW'] == row['ROW']) & (df_input['COL'] == row['COL']), 'model'] = None
-
-#     # 保存修改后的数据表
-#     output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_HourlyMetrics_W126.csv_1'
-#     df_input.to_csv(output_path, index=False)
-#     print(f"已处理并保存到 {output_path}")
-
-# except FileNotFoundError:
-#     print("错误：未找到指定的 CSV 文件，请检查文件路径是否正确。")
-# except KeyError:
-#     print("错误：数据文件中缺少必要的列，请检查列名是否正确。")
-# except Exception as e:
-#     print(f"发生未知错误：{e}")
-    
-    
-#统计动态读取的EPA站点的数据行总数
+#从带 Is 的表中提取 Is = 1 的 ROW 和 COL，并将输入数据表中对应的 model 列设置为空值
 import pandas as pd
 
-def count_rows_in_csv(file_path):
-    try:
-        df = pd.read_csv(file_path)
-        row_count = len(df)
-        return row_count
-    except FileNotFoundError:
-        print("错误: 文件未找到。")
-    except Exception as e:
-        print(f"错误: 发生了一个未知错误: {e}")
-    return None
+try:
+    # 读取带 Is 的表
+    is_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/Region_CONUSHarvard.csv'
+    df_is = pd.read_csv(is_table_path)
 
-if __name__ == "__main__":
-    cross_validation_file = r"/backupdata/data_EPA/EQUATES/CVruns/ozone_2011_cdc_12km.csv"
-    rows = count_rows_in_csv(cross_validation_file)
-    if rows is not None:
-        print(f"文件中的行数为: {rows}")    
+    # 读取输入数据表
+    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_VNA_2011_March_October.csv'
+    df_input = pd.read_csv(input_table_path)
+
+    # 从带 Is 的表中提取 Is = 1 的 ROW 和 COL
+    filter_df = df_is[df_is['Is'] !=1][['ROW', 'COL']]
+
+    # 根据提取的 ROW 和 COL 组合，将输入数据表中对应的 model 列设置为空值
+    for _, row in filter_df.iterrows():
+        df_input.loc[(df_input['ROW'] == row['ROW']) & (df_input['COL'] == row['COL']), 'vna_ozone'] = None
+
+    # 保存修改后的数据表
+    output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_VNA_2011_March_October.csv'
+    df_input.to_csv(output_path, index=False)
+    print(f"已处理并保存到 {output_path}")
+
+except FileNotFoundError:
+    print("错误：未找到指定的 CSV 文件，请检查文件路径是否正确。")
+except KeyError:
+    print("错误：数据文件中缺少必要的列，请检查列名是否正确。")
+except Exception as e:
+    print(f"发生未知错误：{e}")
+    
+    
+# #统计动态读取的EPA站点的数据行总数
+# import pandas as pd
+
+# def count_rows_in_csv(file_path):
+#     try:
+#         df = pd.read_csv(file_path)
+#         row_count = len(df)
+#         return row_count
+#     except FileNotFoundError:
+#         print("错误: 文件未找到。")
+#     except Exception as e:
+#         print(f"错误: 发生了一个未知错误: {e}")
+#     return None
+
+# if __name__ == "__main__":
+#     cross_validation_file = r"/backupdata/data_EPA/EQUATES/CVruns/ozone_2011_cdc_12km.csv"
+#     rows = count_rows_in_csv(cross_validation_file)
+#     if rows is not None:
+#         print(f"文件中的行数为: {rows}")    
 
     
     

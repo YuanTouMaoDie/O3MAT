@@ -84,69 +84,80 @@ import pandas as pd
 
 # # 显示图形
 # plt.show()
-    
-
+#  
 #画出不同点不同时区
-# import geopandas as gpd
-# import pandas as pd
-# import matplotlib.pyplot as plt
-# from shapely.geometry import Point
-# import matplotlib.cm as cm
-# import numpy as np
+import geopandas as gpd
+import pandas as pd
+import matplotlib.pyplot as plt
+from shapely.geometry import Point
+import matplotlib.cm as cm
+import numpy as np
 
-# # 读取美国地图的 GeoJSON 文件
-# us_map = gpd.read_file('output/Region/USA_State.json')
+# 读取美国地图的 GeoJSON 文件
+us_map = gpd.read_file('output/Region/USA_State.json')
 
-# # 筛选出美国本土州的数据，排除阿拉斯加和夏威夷
-# us_continental_map = us_map[~us_map['name'].isin(['Alaska', 'Hawaii'])]
+# 筛选出美国本土州的数据，排除阿拉斯加和夏威夷
+us_continental_map = us_map[~us_map['name'].isin(['Alaska', 'Hawaii'])]
 
-# # 进一步通过经纬度范围筛选（示例范围，可按需调整）
-# min_lon = -125
-# max_lon = -65
-# min_lat = 25
-# max_lat = 50
-# us_continental_map = us_continental_map.cx[min_lon:max_lon, min_lat:max_lat]
+# 进一步通过经纬度范围筛选（示例范围，可按需调整）
+min_lon = -125
+max_lon = -65
+min_lat = 25
+max_lat = 50
+us_continental_map = us_continental_map.cx[min_lon:max_lon, min_lat:max_lat]
 
-# # 读取包含监测点信息的 CSV 文件
-# data = pd.read_csv('output/Region/MonitorsTimeRegion_Filter_Add.csv')
+# 读取包含监测点信息的 CSV 文件
+data = pd.read_csv('output/Region/MonitorsTimeRegion_Filter_ST_QA_Compare.csv')
 
-# # 过滤 Lat 大于 24 且小于 50 的数据
-# filtered_data = data[(data['Lat'] > 24) & (data['Lat'] < 50)]
+# 过滤 Lat 大于 24 且小于 50 的数据
+filtered_data = data[(data['Lat'] > 24) & (data['Lat'] < 50)]
 
-# # 将过滤后的数据点转换为 GeoDataFrame
-# points = gpd.GeoDataFrame(
-#     filtered_data,
-#     geometry=gpd.points_from_xy(filtered_data['Lon'], filtered_data['Lat']),
-#     crs=us_continental_map.crs
-# )
+# 将过滤后的数据点转换为 GeoDataFrame
+points = gpd.GeoDataFrame(
+    filtered_data,
+    geometry=gpd.points_from_xy(filtered_data['Lon'], filtered_data['Lat']),
+    crs=us_continental_map.crs
+)
 
-# # 创建绘图对象
-# fig, ax = plt.subplots(figsize=(12, 8))
+# 指定用于分组绘图的数据列名称
+input_column = 'Fortan - gmt_offset'  # 请替换为实际的列名
 
-# # 绘制美国本土地图
-# us_continental_map.plot(ax=ax, color='#f0f0f0', edgecolor='gray', linewidth=0.5)
+# 指定分组值对应的颜色
+color_mapping = {
+    0: 'white',
+    -1:'Red',
+    1:'green',
+    # 可以根据实际情况添加更多分组值和对应的颜色
+}
 
-# # 根据 gmt_offset 分组
-# grouped = points.groupby('gmt_offset')
-# num_timezones = len(grouped)
-# colors = cm.rainbow(np.linspace(0, 1, num_timezones))
+# 根据用户指定的列分组
+grouped = points.groupby(input_column)
 
-# # 遍历每个时区并绘制数据点
-# for i, (timezone, group) in enumerate(grouped):
-#     group.plot(ax=ax, color=colors[i], markersize=6, alpha=0.7, label=f'Timezone {timezone}')
+# 创建绘图对象
+fig, ax = plt.subplots(figsize=(12, 8))
 
-# # 添加图例
-# ax.legend()
+# 绘制美国本土地图
+us_continental_map.plot(ax=ax, color='#f0f0f0', edgecolor='gray', linewidth=0.5)
 
-# # 添加标题
-# ax.set_title('US Continental Map with Monitoring Points by Timezone', fontsize=16)
+# 遍历每个分组并绘制数据点
+for group_value, group in grouped:
+    color = color_mapping.get(group_value, 'gray')  # 如果未指定颜色，使用灰色
+    group.plot(ax=ax, color=color, markersize=6, alpha=0.7, label=f'{input_column} {group_value}')
 
-# # 设置坐标轴标签
-# ax.set_xlabel('Longitude')
-# ax.set_ylabel('Latitude')
+# 添加图例
+ax.legend()
 
-# # 显示图形
-# plt.show()
+# 添加标题
+ax.set_title(f'US Continental Map with Monitoring Points by {input_column}', fontsize=16)
+
+# 设置坐标轴标签
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+
+# 显示图形
+plt.show()
+    
+    
     
     
 # import pandas as pd
@@ -190,24 +201,24 @@ import pandas as pd
     
     
     
-import pandas as pd
+# import pandas as pd
 
-# 读取CSV文件
-df = pd.read_csv('output/Region/MonitorsTimeRegion_Filter.csv')
+# # 读取CSV文件
+# df = pd.read_csv('output/Region/MonitorsTimeRegion_Filter.csv')
 
-# 准备新的数据行，以字典形式提供，键为列名，值为对应的值
-new_row = {
-   'site_id': '80699991',  # 替换为实际的站点ID
-    'Lat': 40.2778,  # 替换为实际的纬度值
-    'Lon': -105.5453,  # 替换为实际的经度值
-    'gmt_offset': -7.0,  # 替换为实际的 GMT 偏移值
-    'epa_region': '8.0'  # 替换为实际的 EPA 区域
-}
+# # 准备新的数据行，以字典形式提供，键为列名，值为对应的值
+# new_row = {
+#    'site_id': '80699991',  # 替换为实际的站点ID
+#     'Lat': 40.2778,  # 替换为实际的纬度值
+#     'Lon': -105.5453,  # 替换为实际的经度值
+#     'gmt_offset': -7.0,  # 替换为实际的 GMT 偏移值
+#     'epa_region': '8.0'  # 替换为实际的 EPA 区域
+# }
 
-# 将新数据行添加到DataFrame中
-df = df.append(new_row, ignore_index=True)
+# # 将新数据行添加到DataFrame中
+# df = df.append(new_row, ignore_index=True)
 
-# 将修改后的数据写回到CSV文件
-df.to_csv('output/Region/MonitorsTimeRegion_Filter.csv', index=False) 
+# # 将修改后的数据写回到CSV文件
+# df.to_csv('output/Region/MonitorsTimeRegion_Filter.csv', index=False) 
     
     

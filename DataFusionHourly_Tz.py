@@ -77,38 +77,42 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
     if start_date and end_date:
         start = pd.to_datetime(start_date.replace('/', '-'))
         end = pd.to_datetime(end_date.replace('/', '-'))
+        # 根据输入UTC预先筛选监测范围，避免每次都读全年数据,UTC左偏移到localtime范围
         filter_start = start - pd.Timedelta(hours=8)
         filter_end = end - pd.Timedelta(hours=4)
 
-        # 如果是UTC第一天，左偏移读去年监测数据，同时考虑end year第一天数据
+        # 如果是UTC第一天，左偏移读去年监测数据
         years_to_read = [start.year]
         if start.month == 1 and start.day == 1:
             years_to_read.append(start.year - 1)
-        if end.month == 1 and end.day == 1:
-            years_to_read.append(end.year)
 
         df_obs_list = []
         for year in years_to_read:
             monitor_file = monitor_file_template.format(year=year)
             df = pd.read_csv(monitor_file)
             df['dateon'] = pd.to_datetime(df['dateon'])
+            if year == start.year - 1:
+                # 只取上一年最后一天的数据
+                last_day = pd.Timestamp(f'{year}-12-31')
+                df = df[df['dateon'].dt.date == last_day.date()]
+            # 根据计算的范围筛选数据
             df = df[(df['dateon'] >= filter_start) & (df['dateon'] <= filter_end)]
             df_obs_list.append(df)
-        df_obs = pd.concat(df_obs_list, ignore_index=True)
 
+        df_obs = pd.concat(df_obs_list, ignore_index=True)
     else:
         # 如果没有指定日期范围，按原逻辑读取数据
         monitor_file = monitor_file_template.format(year=2011)
         df_obs = pd.read_csv(monitor_file)
         df_obs['dateon'] = pd.to_datetime(df_obs['dateon'])
 
-    # 读取时区偏移量信息,标准时间-5~-8
-    df_gmt_offset = pd.read_csv('output/Region/MonitorsTimeRegion_Filter_ST.csv')
+    # 读取时区偏移量信息
+    df_gmt_offset = pd.read_csv('output/Region/MonitorsTimeRegion_Filter.csv')
 
     # 调用函数填充缺失的时区信息，一般不会缺失
     df_obs = fill_missing_timezone_info(df_obs, df_gmt_offset)
 
-    # 监测点的ST转为对应UTC，比如最东部UTC=ST - (-5)
+    #监测点的ST转为对应UTC，比如最东部UTC=ST - (-5)
     df_obs['utc_dateon'] = df_obs.apply(
         lambda row: row['dateon'] - pd.Timedelta(hours=row['gmt_offset']), axis=1
     )
@@ -164,8 +168,8 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
             year = adjusted_date.year
             month = adjusted_date.month
 
-            # 根据 UTC 时间的年份和月份选择模型文件,适用全年
-            file_index = (year - 2010) * 12 + month - 1
+            # 根据 UTC 时间的年份和月份选择模型文件
+            file_index = (year - 2011) * 12 + month - 1
             if file_index < 0 or file_index >= len(ds_models):
                 print(f"警告：没有对应的模型文件，UTC 日期: {adjusted_date}，跳过处理。")
                 continue
@@ -222,7 +226,7 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
             df_fusion["model"] = ds_hourly_model[model_pollutant][0].values.flatten()
             # 修改日期格式为带小时的形式
             df_fusion["TSTEP"] = adjusted_date.strftime('%Y-%m-%d %H:%M:%S')  # Model的UTC 时间
-            df_fusion["Timestamp"] = date.strftime('%Y-%m-%d %H:%M:%S')  # Monitor调整后的UTC时间
+            df_fusion["Timestamp"] = date.strftime('%Y-%m-%d %H:%M:%S') #Monitor调整后的UTC时间
             df_fusion["COL"] = (df_fusion["COL"] + 0.5).astype(int)
             df_fusion["ROW"] = (df_fusion["ROW"] + 0.5).astype(int)
 
@@ -242,24 +246,24 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
 
 # 在 main 函数中调用
 if __name__ == "__main__":
-    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2010_Data_WithoutCV"
+    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     model_files = [
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201001.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201002.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201003.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201004.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201005.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201006.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201007.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201008.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201009.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201010.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201011.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201012.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201101.nc"
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201101.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201102.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201103.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201104.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201105.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201106.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201107.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201108.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201109.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201110.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201111.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201112.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201201.nc"
     ]
 
     # 使用占位符 {year} 表示年份
@@ -268,10 +272,10 @@ if __name__ == "__main__":
     time_region_file = r"output/Region/MonitorsTimeRegion_Filter.csv"  # 请替换为实际的TimeRegion文件路径
 
     # 指定日期范围
-    start_date = '2010/02/01 00:00'
-    end_date = '2010/11/01 08:00'
+    start_date = '2011/01/01 00:00'
+    end_date = '2012/01/01 07:00'
 
-    daily_output_path = os.path.join(save_path, "2010_SixDataset_Hourly_ST.csv")
+    daily_output_path = os.path.join(save_path, "2011_SixDataset_Hourly4Hours.csv")
     start_hourly_data_fusion(
         model_files,
         monitor_file_template,
@@ -284,4 +288,3 @@ if __name__ == "__main__":
         end_date=end_date,
     )
     print("Done!")
-    

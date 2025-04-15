@@ -38,7 +38,7 @@ if __name__ == "__main__":
         exit(1)
 
     # 读取输入数据表
-    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_W126_4Hours.csv'
+    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_CMAQ_2011_March_October.csv'
     df_input = read_csv_file(input_table_path)
     if df_input is None:
         exit(1)
@@ -47,6 +47,5 @@ if __name__ == "__main__":
     df_filtered = filter_data(df_is, df_input)
     if df_filtered is not None:
         # 保存修改后的数据表
-        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_W126_4HoursF.csv'
-        save_csv_file(df_filtered, output_path)
+        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_CMAQ_2011_March_October_CONUS.csv'
     
