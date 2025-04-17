@@ -162,11 +162,11 @@ def plot_cumulative_distribution(w126_df):
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/backupdata/data_EPA/aq_obs/routine/2011/AQS_hourly_data_2011_LatLon.csv"
+    file_path = "/backupdata/data_EPA/aq_obs/routine/2010/AQS_hourly_data_2010_LatLon.csv"
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/W126"
-    project_name = "2011_Monitor"
+    project_name = "2010_Monitor"
 
     # 调用函数计算指标并保存结果
     w126_df = save_w126_metrics(save_path, project_name, file_path)

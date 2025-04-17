@@ -15,7 +15,7 @@ def filter_data(df_is, df_input):
         filter_df = df_is[df_is['Is'] != 1][['ROW', 'COL']]
         # 使用 merge 函数进行条件筛选
         merged = pd.merge(df_input, filter_df, on=['ROW', 'COL'], how='left', indicator=True)
-        df_input.loc[merged['_merge'] == 'both', 'model'] = None
+        df_input.loc[merged['_merge'] == 'both','vna_ozone'] = None
         return df_input
     except KeyError:
         print("错误：数据文件中缺少必要的列，请检查列名是否正确。")
@@ -25,7 +25,7 @@ def filter_data(df_is, df_input):
 def save_csv_file(df, output_path):
     try:
         df.to_csv(output_path, index=False)
-        print(f"已处理并保存到 {output_path}")
+        print(f"已成功将数据保存到 {output_path}")
     except Exception as e:
         print(f"保存文件时发生错误：{e}")
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         exit(1)
 
     # 读取输入数据表
-    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_CMAQ_2011_March_October.csv'
+    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_VNA_2010_March_October.csv'
     df_input = read_csv_file(input_table_path)
     if df_input is None:
         exit(1)
@@ -47,5 +47,7 @@ if __name__ == "__main__":
     df_filtered = filter_data(df_is, df_input)
     if df_filtered is not None:
         # 保存修改后的数据表
-        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_CMAQ_2011_March_October_CONUS.csv'
-    
+        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/W126_VNA_2010_March_October.csv'
+        save_csv_file(df_filtered, output_path)
+    else:
+        print("数据过滤过程中出现问题，无法保存文件。")

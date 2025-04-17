@@ -5,7 +5,7 @@ file_path = '/backupdata/data_EPA/EQUATES/W126/W126_CMAQ_2002_2019_March_October
 df = pd.read_csv(file_path)
 
 # 提取需要的列
-columns_to_extract = ['X_id', 'lat', 'long', 'W126_2011_CMAQ']
+columns_to_extract = ['X_id', 'lat', 'long', 'W126_2010_CMAQ']
 extracted_df = df[columns_to_extract].copy()
 
 # 定义函数来转换 X_id 为 ROW 和 COL
@@ -22,14 +22,14 @@ extracted_df[['ROW', 'COL']] = extracted_df['X_id'].apply(lambda x: pd.Series(co
 extracted_df.drop('X_id', axis=1, inplace=True)
 
 # 调整列顺序
-new_column_order = ['ROW', 'COL', 'lat', 'long', 'W126_2011_CMAQ']
+new_column_order = ['ROW', 'COL', 'lat', 'long', 'W126_2010_CMAQ']
 extracted_df = extracted_df[new_column_order]
 
 # 按 ROW 和 COL 排序
 extracted_df = extracted_df.sort_values(by=['ROW', 'COL'])
 
 # 将 W126_2011_CMAQ 列重命名为 VNA
-extracted_df = extracted_df.rename(columns={'W126_2011_CMAQ': 'model'})
+extracted_df = extracted_df.rename(columns={'W126_2010_CMAQ': 'model'})
 
 # 新加入一列 Period，值全为 W126
 extracted_df['Period'] = 'W126'
@@ -39,4 +39,4 @@ final_column_order = ['ROW', 'COL', 'lat', 'long', 'model', 'Period']
 extracted_df = extracted_df[final_column_order]
 
 # 如果需要保存为新的 CSV 文件
-extracted_df.to_csv('output/W126/W126_CMAQ_2011_March_October.csv', index=False)
+extracted_df.to_csv('output/W126/W126_CMAQ_2010_March_October.csv', index=False)
