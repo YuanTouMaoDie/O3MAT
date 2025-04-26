@@ -2,6 +2,8 @@ import csv
 import multiprocessing
 from functools import partial
 from tqdm import tqdm
+import pandas as pd
+
 
 # 定义 Line 类，用于存储时区边界线的相关信息
 class Line:
@@ -120,7 +122,6 @@ def get_tz(longitude, latitude, tz_file='output/Region/tz.csv'):
                 # 判断给定纬度是否在交点纬度所定义的区域内
                 if in_area(latitude, lat_values):
                     # 若满足条件，返回对应的时区偏移量（取反）
-                    print(f"Found match in zone: {line.name}, offset: {line.offset}")
                     return -int(line.offset)
             # 将交点的纬度值和对应的时区偏移量添加到列表中
             for val in lat_values:
@@ -141,7 +142,6 @@ def get_tz(longitude, latitude, tz_file='output/Region/tz.csv'):
                 # 判断相邻两个交点对应的时区偏移量是否相同且距离小于 2.0 度
                 if ysec[i] == ysec[i + 1] and xsec[i + 1] - xsec[i] < 2.0:
                     # 若满足条件，返回对应的时区偏移量（取反）
-                    print(f"Found match between zones, offset: {ysec[i]}")
                     return -int(ysec[i])
 
     # 若以上条件都不满足，根据经度计算默认的时区偏移量
@@ -150,14 +150,13 @@ def get_tz(longitude, latitude, tz_file='output/Region/tz.csv'):
     # 如果经度大于 0，对时区偏移量取反
     if longitude > 0:
         tz_offset = -tz_offset
-    print(f"Using default offset based on longitude: {tz_offset}")
     return tz_offset
 
 
 def process_row(row, tz_file='output/Region/tz.csv'):
-    lon = float(row[2])  # 经纬度的索引从 2 开始，因为第一列是 site_id
-    lat = float(row[1])
-    # 不加负号，就为正
+    lon = float(row[2])
+    lat = float(row[3])
+    # 计算时区偏移量
     tz_offset = -get_tz(lon, lat, tz_file)
     gmt_offset = tz_offset
     row.append(str(gmt_offset))
@@ -170,41 +169,50 @@ def process_data(input_file, output_file):
     global lines
     lines = []
 
+    # 读取输入文件并按 ROW 和 COL 排序
+    df_input = pd.read_csv(input_file)
+    df_input = df_input.sort_values(by=['ROW', 'COL']).reset_index(drop=True)
+
     with open(input_file, 'r') as infile:
         reader = csv.reader(infile)
         header = next(reader)
-        header.append('python_gmt_offset')
+        header.append('gmt_offset')
         new_rows = [header]
 
-        rows = []
-        for row in reader:
-            rows.append(row)
+        rows = df_input.values.tolist()
 
-        pool = multiprocessing.Pool()
-        process_row_partial = partial(process_row, tz_file='output/Region/tz.csv')
-        # 使用 pool.map 保证顺序
-        results = pool.map(process_row_partial, rows)
-        new_rows.extend(results)
-        pool.close()
-        pool.join()
+        # 使用 tqdm 显示处理进度
+        with tqdm(total=len(rows), desc="Processing rows") as pbar:
+            pool = multiprocessing.Pool()
+            process_row_partial = partial(process_row, tz_file='output/Region/tz.csv')
+            # 使用 pool.imap_unordered 并更新进度条
+            for result in pool.imap_unordered(process_row_partial, rows):
+                new_rows.append(result)
+                pbar.update(1)
+            pool.close()
+            pool.join()
 
-    with open(output_file, 'w', newline='') as outfile:
-        writer = csv.writer(outfile)
-        writer.writerows(new_rows)
+    # 创建 DataFrame 并按 ROW 和 COL 排序
+    df_result = pd.DataFrame(new_rows[1:], columns=header)
+    df_result = df_result.sort_values(by=['ROW', 'COL']).reset_index(drop=True)
 
-    # 统计 python_gmt_offset 取值的种类数量，以及拥有这些值的网格数量
-    gmt_offset_count = {}
-    for row in new_rows[1:]:  # 跳过标题行
-        gmt_offset = row[-1]
-        if gmt_offset:
-            gmt_offset_count[gmt_offset] = gmt_offset_count.get(gmt_offset, 0)
+    # 确保 ROW 和 COL 列为整数类型
+    df_result['ROW'] = df_result['ROW'].astype(int)
+    df_result['COL'] = df_result['COL'].astype(int)
+
+    # 保存结果到 CSV 文件
+    df_result.to_csv(output_file, index=False)
+
+    # 统计 gmt_offset 取值的种类数量，以及拥有这些值的网格数量
+    gmt_offset_count = df_result['gmt_offset'].value_counts().to_dict()
 
     num_gmt_offsets = len(gmt_offset_count)
-    print(f"python_gmt_offset 取值的种类数量: {num_gmt_offsets}")
+    print(f"处理的网格总数: {len(rows)}")
+    print(f"gmt_offset 取值的种类数量: {num_gmt_offsets}")
     for offset, count in gmt_offset_count.items():
-        print(f"python_gmt_offset 值为 {offset} 的网格数量: {count}")
+        print(f"gmt_offset 值为 {offset} 的网格数量: {count}")
 
 
-input_file = 'output/Region/MonitorsTimeRegion_Filter_ST.csv'
-output_file = 'output/Region/MonitorsTimeRegion_Filter_ST_QA.csv'
+input_file = 'output/Region/ROWCOLRegion.csv'
+output_file = 'output/Region/ROWCOLRegion_Tz_(CONUS+Ocean)_ST.csv'
 process_data(input_file, output_file)

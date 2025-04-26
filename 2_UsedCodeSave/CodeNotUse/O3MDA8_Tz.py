@@ -145,7 +145,7 @@ def save_metrics(save_path, project_name, file_path, timezone_file):
     # 计算新指标
     metrics_df = calculate_metrics_from_mda8(mda8_df)
 
-    metrics_output_file = f'{save_path}/{project_name}_MDA8_metrics.csv'
+    metrics_output_file = f'{save_path}/{project_name}_MDA8_metrics_Exsame.csv'
     metrics_df.to_csv(metrics_output_file, index=False)
     print(f"MDA8 指标数据已保存到: {metrics_output_file}")
 
@@ -156,10 +156,10 @@ def save_metrics(save_path, project_name, file_path, timezone_file):
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_ST.csv"
+    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_Data_HourlySTExsame.csv"
 
     # 读取时区偏移表
-    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/2011_ROWCOLRegion_Tz_CONUS_ST.csv'
+    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/ROWCOLRegion_Tz_CONUS_ST.csv'
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"

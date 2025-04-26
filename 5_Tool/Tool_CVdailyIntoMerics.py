@@ -2,7 +2,7 @@ import pandas as pd
 
 
 def calculate_metrics():
-    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_CV/2011_SixDataset_CV_EQUATES.csv"
+    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2018_Data_CV/2018_SixDataset_CV.csv"
     df = pd.read_csv(file_path)
 
     season_months = {
@@ -63,6 +63,6 @@ def calculate_metrics():
 
 result = calculate_metrics()
 # 保存结果到 CSV 文件
-output_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_CV/2011_SixDataset_CV_EQUATES_Metrics.csv'
+output_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2018_Data_CV/2018_SixDataset_CV_Metrics.csv'
 result.to_csv(output_file, index=False)
 print(f"结果已保存到 {output_file}")

@@ -76,3 +76,46 @@
 
 #Delete Column
 
+# import pandas as pd
+
+# def delete_columns_and_override(file_path, columns_to_delete):
+#     try:
+#         # 读取 CSV 文件
+#         df = pd.read_csv(file_path)
+
+#         # 删除指定列
+#         df = df.drop(columns=columns_to_delete, errors='ignore')
+
+#         # 覆盖原文件
+#         df.to_csv(file_path, index=False)
+#         print(f"已成功删除指定列并覆盖原文件: {file_path}")
+#     except FileNotFoundError:
+#         print(f"错误: 文件 {file_path} 未找到。")
+#     except Exception as e:
+#         print(f"错误: 发生了一个未知错误: {e}")
+
+# # 示例调用
+# file_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/2002_Data_WithoutCV_Metrics.csv'
+# columns_to_delete = ['Year_x','Year_y','harvard_ml', 'ds_ozone']
+# delete_columns_and_override(file_path, columns_to_delete)
+
+import pandas as pd
+
+# 读取两个CSV文件
+df1 = pd.read_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/ROWCOLRegion_Tz_(CONUS+Ocean)_ST.csv')
+df2 = pd.read_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/ROWCOLRegion_Tz_CONUS_ST.csv')
+
+# 合并两个数据帧，基于ROW和COL列
+merged_df = pd.merge(df1, df2, on=['ROW', 'COL'], suffixes=('_df1', '_df2'))
+
+# 计算差异（Diff）
+merged_df['Diff'] = merged_df['gmt_offset_df1'] - merged_df['gmt_offset_df2']
+
+# 选择需要的列并重新命名
+result_df = merged_df[['ROW', 'COL', 'Lat_df1', 'Lon_df1', 'Diff']].rename(columns={
+    'Lat_df1': 'Lat',
+    'Lon_df1': 'Lon'
+})
+
+# 保存结果到指定路径
+result_df.to_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/OceanQA.csv', index=False)

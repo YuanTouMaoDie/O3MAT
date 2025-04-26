@@ -5,17 +5,14 @@ import numba
 
 
 # 定义需要读取的列
-usecols = ['ROW', 'COL', 'Timestamp', 'vna_ozone', 'avna_ozone', 'evna_ozone', 'model']
+usecols = ['ROW', 'COL', 'Timestamp','model']
 
 # 定义每列的数据类型，减少内存使用
 dtype = {
     'ROW': 'int32',
     'COL': 'int32',
     'Timestamp': 'object',
-    'vna_ozone': 'float32',
-    'avna_ozone': 'float32',
-    'evna_ozone': 'float32',
-    'model': 'float32'
+   'model': 'float32'
 }
 
 
@@ -95,11 +92,11 @@ def calculate_w126_for_grid(grid_group, ozone_columns):
 
 def calculate_w126_metric(df_data, save_path, project_name):
     print("开始计算 W126 指标...")
-    ozone_columns = ['vna_ozone', 'evna_ozone', 'avna_ozone', 'model']
+    ozone_columns = ['model']
     # 转换单位，ppbv to ppm
     df_data[ozone_columns] = df_data[ozone_columns] / 1000
 
-    # 根据localtime筛选
+    # 根据localtime筛选，注意修改年份时间
     df_2011 = df_data[(df_data['Year'] == 2011)]
     df_daytime = df_2011[(df_2011['hour'] >= 8) & (df_2011['hour'] < 20)]
 
@@ -117,23 +114,11 @@ def calculate_w126_metric(df_data, save_path, project_name):
 
     w126_df = pd.DataFrame(all_w126_metrics)
 
-    # 生成所有可能的 ROW 和 COL 组合,填充CONUS的值
-    all_rows = np.arange(1, 300)
-    all_cols = np.arange(1, 460)
-    index = pd.MultiIndex.from_product([all_rows, all_cols], names=['ROW', 'COL'])
-
-    full_df = pd.DataFrame(index=index).reset_index()
-    full_df['Period'] = 'W126'
-
-    # 合并计算结果
-    merged_df = pd.merge(full_df, w126_df, on=['ROW', 'COL', 'Period'], how='left')
-
-    w126_output_file = f'{save_path}/{project_name}_W126_5HoursNew.csv'
-    merged_df[['ROW', 'COL', 'model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'Period']].to_csv(w126_output_file,
-                                                                                                index=False)
+    w126_output_file = f'{save_path}/{project_name}_W126_ST.csv'
+    w126_df[['ROW', 'COL','model', 'Period']].to_csv(w126_output_file, index=False)
     print(f"W126 指标数据已保存到: {w126_output_file}")
     print("W126 指标计算完成.")
-    return merged_df
+    return w126_df
 
 
 def save_w126_metrics(save_path, project_name, file_path, timezone_file):
@@ -153,16 +138,16 @@ def save_w126_metrics(save_path, project_name, file_path, timezone_file):
     w126_df = calculate_w126_metric(local_df, save_path, project_name)
 
     print("W126 指标保存完成.")
-    return f'{save_path}/{project_name}_W126.csv'
+    return f'{save_path}/{project_name}_W126_AtF(OceanAndCONUS).csv'
 
 
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_Data_HourlyST.csv"
+    file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_ST.csv"
 
     # 读取时区偏移表
-    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/2011_ROWCOLRegion_Tz_CONUS_ST.csv'
+    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/ROWCOLRegion_Tz_(CONUS+Ocean)_ST.csv'
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"

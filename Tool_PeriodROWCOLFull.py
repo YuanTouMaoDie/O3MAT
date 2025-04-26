@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 读取输入文件
-input_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/Test/2011_HourlyIntoMetrics_local.csv'
+input_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_O3MDA8_HourlyIntoDailyIntoMetrics.csv'
 df = pd.read_csv(input_file)
 
 # 定义 ROW 和 COL 的范围
@@ -47,6 +47,6 @@ for period, group in df.groupby('Period'):
 final_result = pd.concat(all_results, ignore_index=True)
 
 # 保存最终结果
-output_file = f'{input_file}_Full.csv'
+output_file = f'{input_file}'
 final_result.to_csv(output_file, index=False)
 print(f'所有 Period 的结果已保存到 {output_file}')

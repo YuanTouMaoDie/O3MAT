@@ -124,7 +124,7 @@ def save_daily_data_fusion_to_metrics(save_path, project_name, file_path, timezo
     mda8_df = compute(mda8_task)[0]
 
     # 保存MDA8结果
-    output_file = f'{save_path}/{project_name}_O3MDA8_HourlyIntoDaily_local.csv'
+    output_file = f'{save_path}/{project_name}_O3MDA8_HourlyIntoDaily.csv'
     mda8_df.to_csv(output_file, index=False)
     print(f"MDA8 指标数据已保存到: {output_file}")
     print("每日数据融合指标保存完成.")
@@ -138,10 +138,10 @@ if __name__ == "__main__":
     file_path = "/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Hourly_ST.csv"
 
     # 读取时区偏移表
-    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/2011_ROWCOLRegion_Tz_CONUS_ST.csv'
+    timezone_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/ROWCOLRegion_Tz_CONUS_ST.csv'
 
     # 定义保存路径和项目名称
-    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/Test"
+    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/"
     project_name = "2011"
 
     # 调用函数计算指标并保存结果

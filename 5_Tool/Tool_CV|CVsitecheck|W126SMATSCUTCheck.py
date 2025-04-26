@@ -92,3 +92,43 @@
 #     print("由Date、Site、CVgroup列构成的字典完全一样")
 # else:
 #     print("由Date、Site、CVgroup列构成的字典不完全一样")
+
+import pandas as pd
+
+# 定义文件路径
+base_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126'
+file1_path = f'{base_path}/2011_Monitor_W126_NotSameSiteWithSMAT.csv'
+file2_path = f'{base_path}/2011_Monitor_W126.csv'
+
+try:
+    # 读取 CSV 文件
+    df1 = pd.read_csv(file1_path)
+    df2 = pd.read_csv(file2_path)
+
+    # 检查两个 DataFrame 中是否都存在 'Site' 列
+    if 'Site' in df1.columns and 'Site' in df2.columns:
+        # 获取第一个文件中的所有 Site
+        sites_in_df1 = df1['Site'].unique()
+
+        # 初始化计数器
+        found_count = 0
+        not_found_count = 0
+
+        # 遍历每个 Site 并检查是否存在于第二个文件中
+        for site in sites_in_df1:
+            if site in df2['Site'].values:
+                found_count += 1
+            else:
+                not_found_count += 1
+
+        # 输出统计结果
+        print(f"在 2011_Monitor_W126.csv 中找到的 Site 数量: {found_count}")
+        print(f"在 2011_Monitor_W126.csv 中未找到的 Site 数量: {not_found_count}")
+    else:
+        print("其中一个文件中不存在 'Site' 列。")
+
+except FileNotFoundError:
+    print("错误：文件未找到，请检查文件路径是否正确。")
+except Exception as e:
+    print(f"发生未知错误：{e}")
+    

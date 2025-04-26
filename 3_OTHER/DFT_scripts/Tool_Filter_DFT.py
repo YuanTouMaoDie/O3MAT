@@ -9,13 +9,14 @@ def read_csv_file(file_path):
         return None
 
 
-def filter_data(df_is, df_input):
+def filter_data(df_is, df_input, columns_to_process):
     try:
         # 从带 Is 的表中提取 Is = 1 的 ROW 和 COL
         filter_df = df_is[df_is['Is'] != 1][['ROW', 'COL']]
         # 使用 merge 函数进行条件筛选
         merged = pd.merge(df_input, filter_df, on=['ROW', 'COL'], how='left', indicator=True)
-        df_input.loc[merged['_merge'] == 'both','model'] = None
+        for col in columns_to_process:
+            df_input.loc[merged['_merge'] == 'both', col] = None
         return df_input
     except KeyError:
         print("错误：数据文件中缺少必要的列，请检查列名是否正确。")
@@ -38,16 +39,19 @@ if __name__ == "__main__":
         exit(1)
 
     # 读取输入数据表
-    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/2002_Data_WithoutCV_Metrics.csv'
+    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2011_AnnualO3_PythonFormat.csv'
     df_input = read_csv_file(input_table_path)
     if df_input is None:
         exit(1)
 
+    # 定义要处理的列名列表
+    columns_to_process = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone']  # 根据实际情况修改
+
     # 过滤数据
-    df_filtered = filter_data(df_is, df_input)
+    df_filtered = filter_data(df_is, df_input, columns_to_process)
     if df_filtered is not None:
         # 保存修改后的数据表
-        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/2002_Data_WithoutCV_Metrics.csv'
+        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2011_AnnualO3_PythonFormat_CONUS.csv'
         save_csv_file(df_filtered, output_path)
     else:
         print("数据过滤过程中出现问题，无法保存文件。")

@@ -143,15 +143,15 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     # 初始化一个空的 DataFrame 来存储所有指标
     all_metrics = []
 
-    # 98th percentile of MDA8 ozone concentration
-    df_data_98th_percentile = df_data.groupby(["ROW", "COL"]).agg(
-        {'vna_ozone': lambda x: x.quantile(0.98),
-         'evna_ozone': lambda x: x.quantile(0.98),
-         'avna_ozone': lambda x: x.quantile(0.98),
-        'model': lambda x: x.quantile(0.98)}
-    ).reset_index()
-    df_data_98th_percentile["Period"] = f"98th"
-    all_metrics.append(df_data_98th_percentile)
+    # 98th percentile of MDA8 ozone concentration,应EPA要求
+    # df_data_98th_percentile = df_data.groupby(["ROW", "COL"]).agg(
+    #     {'vna_ozone': lambda x: x.quantile(0.98),
+    #      'evna_ozone': lambda x: x.quantile(0.98),
+    #      'avna_ozone': lambda x: x.quantile(0.98),
+    #     'model': lambda x: x.quantile(0.98)}
+    # ).reset_index()
+    # df_data_98th_percentile["Period"] = f"98th"
+    # all_metrics.append(df_data_98th_percentile)
 
     # top-10 average of MDA8 ozone days
     def top_10_average(series):
@@ -210,7 +210,7 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
     final_df = pd.concat(all_metrics, ignore_index=True)
 
     # 保存为一个 CSV 文件
-    output_file = os.path.join(save_path, f"{project_name}_metrics.csv")
+    output_file = os.path.join(save_path, f"{project_name}_Metrics.csv")
     final_df.to_csv(output_file, index=False)
     output_file_list.append(output_file)
 
@@ -219,12 +219,12 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
 
 # 在 main 函数中调用
 if __name__ == "__main__":
-    base_save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output"
+    base_save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/"
     base_model_file_path = r"/backupdata/data_EPA/EQUATES/EQUATES_data/"  # 模型数据基础路径
     base_monitor_file_path = r"/backupdata/data_EPA/EQUATES/EQUATES_data/"  # 监测数据基础路径
     region_table_file = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/Region_CONUSHarvard.csv"  # 替换为实际的包含 Is 列的数据表文件路径
 
-    for year in range(2002, 2020):
+    for year in range(2008, 2020):
         if year == 2011:
             continue
 
@@ -233,19 +233,21 @@ if __name__ == "__main__":
         # 动态生成监测文件路径
         monitor_file = os.path.join(base_monitor_file_path, f"ds.input.aqs.o3.{year}.csv")
 
-        save_path = os.path.join(base_save_path, str(year))
+        # 修改输出文件路径
+        file_path = os.path.join(base_save_path, f"{year}_Data_WithoutCV.csv")
+
+        save_path = os.path.dirname(file_path)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
         start_date = f"{year}-01-01"
         end_date = f"{year}-12-31"
 
-        daily_output_path = os.path.join(save_path, f"{year}_Test.csv")
         start_daily_data_fusion(
             model_file,
             monitor_file,
             region_table_file,
-            daily_output_path,
+            file_path,
             monitor_pollutant="Conc",
             model_pollutant="O3_MDA8",
             start_date=start_date,

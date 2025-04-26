@@ -129,7 +129,7 @@ def process_csv(input_file_path, save_path, project_name):
 
 
 if __name__ == "__main__":
-    input_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/Test/2011_O3MDA8_HourlyIntoDaily_local.csv'  # 替换为实际的输入 CSV 文件路径
+    input_file = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_O3MDA8_HourlyIntoDaily.csv'  # 替换为实际的输入 CSV 文件路径
     save_path = '.'  # 替换为实际的保存路径
-    project_name = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/Test/2011_HourlyIntoMetrics_local'  # 替换为实际的项目名称
+    project_name = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_O3MDA8_HourlyIntoDailyIntoMetrics.csv'  # 替换为实际的项目名称
     process_csv(input_file, save_path, project_name)

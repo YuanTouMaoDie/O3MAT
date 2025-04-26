@@ -157,19 +157,19 @@ def start_daily_data_fusion(model_file, monitor_file, cross_validation_file, fil
 
 # 在 main 函数中调用
 if __name__ == "__main__":
-    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_CV"
+    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2002_Data_CV"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
-    monitor_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2011.csv"
-    cross_validation_file = r"/backupdata/data_EPA/EQUATES/CVruns/ozone_2011_equates_12km.csv"  # 替换为实际的交叉验证文件路径
+    model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2002_12US1_2002.nc"
+    monitor_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2002.csv"
+    cross_validation_file = r"/backupdata/data_EPA/EQUATES/CVruns/ozone_2002_equates_12km.csv"  # 替换为实际的交叉验证文件路径
 
     # 指定日期范围
-    start_date = '2011-01-01'
-    end_date = '2011-12-31'
+    start_date = '2002-01-01'
+    end_date = '2002-12-31'
 
-    daily_output_path = os.path.join(save_path, "2011_SixDataset_CV_EQUATES.csv")
+    daily_output_path = os.path.join(save_path, "2002_SixDataset_CV.csv")
     start_daily_data_fusion(
         model_file,
         monitor_file,

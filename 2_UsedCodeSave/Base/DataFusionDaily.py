@@ -226,14 +226,14 @@ if __name__ == "__main__":
 
     model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
     # model_file = r"/backupdata/data_EPA/Harvard/unzipped_tifs/Harvard_O3MDA8_Regridded_grid_center_2011_12km.nc"
-    monitor_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2011_Exsame.csv"
+    monitor_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2011.csv"
     region_table_file = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/Region_CONUSHarvard.csv"  # 替换为实际的包含 Is 列的数据表文件路径
 
     # 指定日期范围
-    start_date = '2011-01-01'
+    start_date = '2011-01-02'
     end_date = '2011-12-31'
 
-    daily_output_path = os.path.join(save_path, "2011_Data_WithoutCV_Metrics_Exsame.csv")
+    daily_output_path = os.path.join(save_path, "Test.csv")
     start_daily_data_fusion(
         model_file,
         monitor_file,

@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 
 
 # 定义需要读取的列
-usecols = ['site_id', 'dateon', 'O3']
+usecols = ['site_id', 'dateon', 'O3', 'Lat', 'Lon']
 
 # 定义每列的数据类型，减少内存使用
 dtype = {
     'site_id': 'object',
     'dateon': 'object',
-    'O3': 'float32'
+    'O3': 'float32',
+    'Lat': 'float32',
+    'Lon': 'float32'
 }
 
 
@@ -110,14 +112,14 @@ def calculate_w126_metric(df_data, save_path, project_name):
     for site_id, group in tqdm(grouped, desc="Processing sites"):
         task = calculate_single_w126(group)
         result = compute(task)[0]
-        w126_metrics = {'site_id': site_id, 'Period': 'W126', 'O3': result}
+        w126_metrics = {'Site': site_id, 'O3': result, 'Lat': group['Lat'].iloc[0], 'Lon': group['Lon'].iloc[0], 'Period': 'W126'}
         all_w126_metrics.append(w126_metrics)
 
     w126_df = pd.DataFrame(all_w126_metrics)
     # 按照 O3 列的值从大到小排序
     w126_df = w126_df.sort_values(by='O3', ascending=False)
     w126_output_file = f'{save_path}/{project_name}_W126.csv'
-    w126_df[['site_id', 'O3', 'Period']].to_csv(w126_output_file, index=False)
+    w126_df[['Site', 'O3', 'Lat', 'Lon', 'Period']].to_csv(w126_output_file, index=False)
     print(f"W126 指标数据已保存到: {w126_output_file}")
     print("W126 指标计算完成.")
     return w126_df
@@ -162,11 +164,11 @@ def plot_cumulative_distribution(w126_df):
 if __name__ == "__main__":
     print("开始读取输入文件...")
     # 读取输入文件
-    file_path = "/backupdata/data_EPA/aq_obs/routine/2010/AQS_hourly_data_2010_LatLon.csv"
+    file_path = "/backupdata/data_EPA/aq_obs/routine/2011/AQS_hourly_data_2011_LatLon.csv"
 
     # 定义保存路径和项目名称
     save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/W126"
-    project_name = "2010_Monitor"
+    project_name = "2011_Monitor"
 
     # 调用函数计算指标并保存结果
     w126_df = save_w126_metrics(save_path, project_name, file_path)
@@ -175,4 +177,3 @@ if __name__ == "__main__":
     plot_cumulative_distribution(w126_df)
 
     print(f'W126 指标文件已保存到: {save_path}/{project_name}_W126.csv')
-    

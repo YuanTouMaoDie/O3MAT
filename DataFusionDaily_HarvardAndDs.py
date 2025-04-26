@@ -218,7 +218,7 @@ def merge_with_existing(existing_df_path, new_df):
 # 定义路径
 harvard_nc_file = '/backupdata/data_EPA/Harvard/unzipped_tifs/Harvard_O3MDA8_Regridded_grid_center_2011_12km.nc'
 ds_nc_file = '/backupdata/data_EPA/EQUATES/DS_data/CMAQv532_DSFusion_12US1_2011.nc'
-existing_df_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_CONUSHarvard_metrics.csv'
+existing_df_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/2011_Data_WithoutCV_Metrics.csv'
 
 # 处理哈佛 ML 数据并合并
 harvard_df = extract_harvard_nc_to_dataframe(harvard_nc_file)

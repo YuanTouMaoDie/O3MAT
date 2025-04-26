@@ -161,7 +161,7 @@ def process_row(row, is_valid, tz_file='output/Region/tz.csv'):
         lat = float(row[3])
         # 不加负号，就为正
         tz_offset = -get_tz(lon, lat, tz_file)
-        gmt_offset = tz_offset + 1
+        gmt_offset = tz_offset
         row.append(str(gmt_offset))
     else:
         row.append('')

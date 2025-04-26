@@ -3,17 +3,19 @@
 # import itertools
 
 # # 数据文件路径
-# data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/2011_SixDataset_Daily_Metrics.csv'
+# data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/2002_Data_WithoutCV.csv'
 
 # # 读取数据文件
 # df = pd.read_csv(data_path)
 
-# # 指定要提取数据的 Period 值
+# # # 指定要提取数据的 Period 值
 # target_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep']
+# # target_periods = ['Annual', 'Apr-Sep']
 
 # # 指定要提取的列
 # target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'harvard_ml', 'ds_ozone']
 # # target_columns = ['SD']
+# # target_columns = ['Missing']
 
 # # 提取对应 Period 和列的数据
 # extracted_data = df[df['Period'].isin(target_periods)][target_columns]
@@ -48,43 +50,43 @@
 # print("整体数据的最大值：", overall_max)
 # print("整体数据的最小值：", overall_min)
 
-# # # 生成所有可能的列对
-# # variables = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone', 'harvard_ml']
-# # comparisons = list(itertools.combinations(variables, 2))
+# # 生成所有可能的列对
+# variables = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone', 'harvard_ml']
+# comparisons = list(itertools.combinations(variables, 2))
 
-# # # 存储所有列对的差值
-# # all_differences = []
+# # 存储所有列对的差值
+# all_differences = []
 
-# # # 计算每对列的差值并存储
-# # for col1, col2 in comparisons:
-# #     diff = extracted_data[col1] - extracted_data[col2]
-# #     all_differences.extend(diff)
+# # 计算每对列的差值并存储
+# for col1, col2 in comparisons:
+#     diff = extracted_data[col1] - extracted_data[col2]
+#     all_differences.extend(diff)
 
-# # # 将差值列表转换为 NumPy 数组
-# # all_differences = np.array(all_differences)
+# # 将差值列表转换为 NumPy 数组
+# all_differences = np.array(all_differences)
 
-# # # 计算所有差值的 99.5 分位值
-# # diff_vmax_conc = (
-# #     np.nanpercentile(all_differences, 99.5)
-# #     if default_max_value is None
-# #     else default_max_value
-# # )
+# # 计算所有差值的 99.5 分位值
+# diff_vmax_conc = (
+#     np.nanpercentile(all_differences, 99.5)
+#     if default_max_value is None
+#     else default_max_value
+# )
 
-# # # 计算所有差值的 0.5 分位值
-# # diff_vmin_conc = (
-# #     np.nanpercentile(all_differences, 0.5)
-# #     if default_min_value is None
-# #     else default_min_value
-# # )
+# # 计算所有差值的 0.5 分位值
+# diff_vmin_conc = (
+#     np.nanpercentile(all_differences, 0.5)
+#     if default_min_value is None
+#     else default_min_value
+# )
 
-# # # 计算所有差值数据的最大值和最小值
-# # diff_max = np.nanmax(all_differences)
-# # diff_min = np.nanmin(all_differences)
+# # 计算所有差值数据的最大值和最小值
+# diff_max = np.nanmax(all_differences)
+# diff_min = np.nanmin(all_differences)
 
-# # print("所有列对差值的 99.5 分位值：", diff_vmax_conc)
-# # print("所有列对差值的 0.5 分位值：", diff_vmin_conc)
-# # print("所有列对差值的最大值：", diff_max)
-# # print("所有列对差值的最小值：", diff_min)
+# print("所有列对差值的 99.5 分位值：", diff_vmax_conc)
+# print("所有列对差值的 0.5 分位值：", diff_vmin_conc)
+# print("所有列对差值的最大值：", diff_max)
+# print("所有列对差值的最小值：", diff_min)
 
 import pandas as pd
 
@@ -110,12 +112,13 @@ def calculate_stats(df, column_name, periods=None, period_column='Period'):
 
 
 # 读取 CSV 文件
-file_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/W126/2011_Monitor_W126_Compare.csv'
+file_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/mean_data_by_site.csv'
+file_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV/rn_filtered_data_W126.csv'
 # file_path = '/backupdata/data_EPA/EQUATES/EQUATES_data/ds.input.aqs.o3.2011_MissingDays.csv'
 try:
     df = pd.read_csv(file_path)
     # 要计算统计信息的列名
-    column_name = 'EPA_W126'
+    column_name = 'r_n'
 
     # 计算统计信息，不指定 Period
     min_value, max_value, mean_value = calculate_stats(df, column_name)
