@@ -8,7 +8,7 @@ def process_file(input_file_path, output_file_path):
 
     # 所需列列表
     # required_columns = ['pm25_Model', 'pm25_VNA', 'pm25_eVNA', 'pm25_aVNA', '_id']
-    required_columns = ['O3_Model', 'O3_VNA', 'O3_eVNA', 'O3_aVNA', '_id']
+    required_columns = ['pm25_Model_mAverage', 'pm25_VNA_mAverage', 'pm25_eVNA_mAverage', 'pm25_aVNA_mAverage', '_id']
     print("需要的列名:", required_columns)  # 打印需要的列名
 
     # 过滤出文件中实际存在的所需列
@@ -23,15 +23,15 @@ def process_file(input_file_path, output_file_path):
     result_df = df[existing_columns].copy()
     # rename_mapping = {
     #     'pm25_Model': 'model',
-    #     'pm25_VNA': 'vna_ozone',
-    #     'pm25_eVNA': 'evna_ozone',
-    #     'pm25_aVNA': 'avna_ozone'
+    #     'pm25_VNA': 'vna_pm25',
+    #     'pm25_eVNA': 'evna_pm25',
+    #     'pm25_aVNA': 'avna_pm25'
     # }
     rename_mapping = {
-        'O3_Model': 'model',
-        'O3_VNA': 'vna_ozone',
-        'O3_eVNA': 'evna_ozone',
-        'O3_aVNA': 'avna_ozone'
+        'pm25_Model_mAverage': 'model',
+        'pm25_VNA_mAverage': 'vna_pm25',
+        'pm25_eVNA_mAverage': 'evna_pm25',
+        'pm25_aVNA_mAverage': 'avna_pm25'
     }
     # 对存在的列进行重命名
     result_df.rename(columns={col: rename_mapping[col] for col in existing_columns if col in rename_mapping}, inplace=True)
@@ -42,7 +42,7 @@ def process_file(input_file_path, output_file_path):
 
     # 在最终合并的数据表上计算 ROW 和 COL
     length = len(result_df)  # 获取最终数据表的长度
-    rows_per_col = 299  # ROW 从 1 到 299
+    rows_per_col = 246  # ROW 从 1 到 299
     cols = (length - 1) // rows_per_col + 1  # COL 最大值
 
     # 为整个数据表生成 ROW 和 COL
@@ -71,9 +71,9 @@ def process_file(input_file_path, output_file_path):
 
 
 # 输入文件路径
-input_file = "/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2011_AnnualO3.csv"
+input_file = "/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2017MAM_PM25_DFTAtF.csv"
 # 输出文件路径
-output_file = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2011_AnnualO3_PythonFormat.csv'
+output_file = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2017MAM_PM25_DFTAtF.csv'
 
 # 调用函数处理文件
 process_file(input_file, output_file)

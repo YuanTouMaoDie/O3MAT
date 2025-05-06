@@ -33,25 +33,25 @@ def save_csv_file(df, output_path):
 
 if __name__ == "__main__":
     # 读取带 Is 的表
-    is_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/Region_CONUSHarvard.csv'
+    is_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/Region/Region_CONUS246396.csv'
     df_is = read_csv_file(is_table_path)
     if df_is is None:
         exit(1)
 
     # 读取输入数据表
-    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2011_AnnualO3_PythonFormat.csv'
+    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2017MAM_PM25_DFTAtF.csv'
     df_input = read_csv_file(input_table_path)
     if df_input is None:
         exit(1)
 
     # 定义要处理的列名列表
-    columns_to_process = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone']  # 根据实际情况修改
+    columns_to_process = ['model', 'vna_pm25', 'evna_pm25', 'avna_pm25']  # 根据实际情况修改
 
     # 过滤数据
     df_filtered = filter_data(df_is, df_input, columns_to_process)
     if df_filtered is not None:
         # 保存修改后的数据表
-        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2011_AnnualO3_PythonFormat_CONUS.csv'
+        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2017MAM_PM25_DFTAtF.csv'
         save_csv_file(df_filtered, output_path)
     else:
         print("数据过滤过程中出现问题，无法保存文件。")

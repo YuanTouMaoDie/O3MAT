@@ -27,7 +27,7 @@ def read_json(file_path):
 
 def generate_polygons_within_usa():
     """定义美国的多个简单多边形区域（从txt文件读取）"""
-    coords = read_json("/DeepLearning/mnt/shixiansheng/data_fusion/USA_Contiguous_Boundary_Json.txt")
+    coords = read_json("/DeepLearning/mnt/shixiansheng/data_fusion/output/Region/NotUse/USA_Contiguous_Boundary_Json.txt")
     
     # 使用 pyproj 将这些经纬度坐标转换为投影坐标（例如 LCC）
     proj_string = (
@@ -103,13 +103,14 @@ def filter_points_with_multiple_polygons(df, save_filtered_file, polygons, remov
     print(f"已保存处理后的数据至: {save_filtered_file}")
 
 if __name__ == "__main__":
-    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output"
+    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/Region"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
-    data_fusion_file = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/BarronResult_aVNA_2011_FtAIndex.csv"
-    filtered_file = os.path.join(save_path, "BarronReuslt_aVNA_2011_FtAIndex_InUSA.csv")
+    # model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
+    model_file = r"/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/CMAQ_daily_PM_O3_Species_2017.ioapi"
+    data_fusion_file = r"/DeepLearning/mnt/shixiansheng/data_fusion/3_OTHER/DFT_output/2017_DFT_eVNAaVNA246396_PythonFormat.csv"
+    filtered_file = os.path.join(save_path, "246396_InUSA.csv")
 
     # 读取数据
     df_data = pd.read_csv(data_fusion_file)

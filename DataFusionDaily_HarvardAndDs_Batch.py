@@ -230,8 +230,8 @@ def process_nc_file(nc_file, extract_func, year):
 
 
 # 指定年份范围
-start_year = 2002
-end_year = 2002  # 可根据需要修改结束年份
+start_year = 2011
+end_year = 2011  # 可根据需要修改结束年份
 
 for year in range(start_year, end_year + 1):
     print(f"开始处理 {year} 年的数据")
