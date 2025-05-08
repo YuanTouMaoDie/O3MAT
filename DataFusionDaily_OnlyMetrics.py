@@ -87,7 +87,7 @@ def save_daily_data_fusion_to_metrics(df_data, save_path, project_name):
 if __name__ == "__main__":
     base_save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/"
 
-    year = 2011
+    year = 2008
     # 假设已经有了处理好的每日融合数据文件
     file_path = os.path.join(base_save_path, f"{year}_Data_WithoutCV.csv")
     df_data = pd.read_csv(file_path)

@@ -5,7 +5,7 @@ def read_csv_file(file_path):
     try:
         return pd.read_csv(file_path)
     except FileNotFoundError:
-        print("错误：未找到指定的 CSV 文件，请检查文件路径是否正确。")
+        print(f"错误：未找到指定的 CSV 文件 {file_path}，请检查文件路径是否正确。")
         return None
 
 
@@ -15,7 +15,8 @@ def filter_data(df_is, df_input):
         filter_df = df_is[df_is['Is'] != 1][['ROW', 'COL']]
         # 使用 merge 函数进行条件筛选
         merged = pd.merge(df_input, filter_df, on=['ROW', 'COL'], how='left', indicator=True)
-        df_input.loc[merged['_merge'] == 'both','model'] = None
+        columns_to_update = ['model','ds_ozone']
+        df_input.loc[merged['_merge'] == 'both', columns_to_update] = None
         return df_input
     except KeyError:
         print("错误：数据文件中缺少必要的列，请检查列名是否正确。")
@@ -37,17 +38,23 @@ if __name__ == "__main__":
     if df_is is None:
         exit(1)
 
-    # 读取输入数据表
-    input_table_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/2002_Data_WithoutCV_Metrics.csv'
-    df_input = read_csv_file(input_table_path)
-    if df_input is None:
-        exit(1)
+    # 指定年份列表
+    years = [2008]
+    for year in years:
+        # 动态构建输入和输出文件路径
+        input_table_path = f'/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/{year}_Data_WithoutCV_Metrics.csv'
+        output_path = f'/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/{year}_Data_WithoutCV_Metrics.csv'
 
-    # 过滤数据
-    df_filtered = filter_data(df_is, df_input)
-    if df_filtered is not None:
-        # 保存修改后的数据表
-        output_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Data_WithoutCV/2002_Data_WithoutCV_Metrics.csv'
-        save_csv_file(df_filtered, output_path)
-    else:
-        print("数据过滤过程中出现问题，无法保存文件。")
+        # 读取输入数据表
+        df_input = read_csv_file(input_table_path)
+        if df_input is None:
+            continue
+
+        # 过滤数据
+        df_filtered = filter_data(df_is, df_input)
+        if df_filtered is not None:
+            # 保存修改后的数据表
+            save_csv_file(df_filtered, output_path)
+        else:
+            print(f"数据过滤过程中出现问题，无法保存 {year} 年的文件。")
+    

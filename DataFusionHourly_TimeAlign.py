@@ -268,10 +268,10 @@ if __name__ == "__main__":
     time_region_file = r"output/Region/MonitorsTimeRegion_Filter_ST.csv"  # 请替换为实际的TimeRegion文件路径
 
     # 指定日期范围
-    start_date = '2011/01/01 00:00'
-    end_date = '2012/01/01 08:00'
+    start_date = '2011/03/01 00:00'
+    end_date = '2011/11/01 08:00'
 
-    daily_output_path = os.path.join(save_path, "2011_Data_HourlySTExsame.csv")
+    daily_output_path = os.path.join(save_path, "2011_HourlyData_09230000.csv")
     start_hourly_data_fusion(
         model_files,
         monitor_file_template,

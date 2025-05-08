@@ -9,7 +9,7 @@ df = pd.read_csv(data_path)
 # 假设参与计算的列，你需要根据实际情况修改
 # columns_to_calculate = ['model','vna_ozone', 'evna_ozone', 'avna_ozone','ds_ozone','harvard_ml']
 #colums_W126
-columns_to_calculate = ['model','vna_ozone', 'evna_ozone', 'avna_ozone']
+columns_to_calculate = ['model','vna_ozone', 'evna_ozone', 'avna_ozone','ds_ozone','harvard_ml']
 
 # 用于存储结果的数据列表
 results = []
