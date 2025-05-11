@@ -98,7 +98,7 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
 
     else:
         # 如果没有指定日期范围，按原逻辑读取数据
-        monitor_file = monitor_file_template.format(year=2011)
+        monitor_file = monitor_file_template.format(year=2019)
         df_obs = pd.read_csv(monitor_file)
         df_obs['dateon'] = pd.to_datetime(df_obs['dateon'])
 
@@ -165,7 +165,7 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
             month = adjusted_date.month
 
             # 根据 UTC 时间的年份和月份选择模型文件,适用全年
-            file_index = (year - 2011) * 12 + month - 1
+            file_index = (year - 2019) * 12 + month - 1
             if file_index < 0 or file_index >= len(ds_models):
                 print(f"警告：没有对应的模型文件，UTC 日期: {adjusted_date}，跳过处理。")
                 continue
@@ -244,24 +244,23 @@ def start_hourly_data_fusion(model_files, monitor_file_template, region_table_fi
 
 # 在 main 函数中调用
 if __name__ == "__main__":
-    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/2011_Data_WithoutCV"
+    save_path = r"/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     model_files = [
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201101.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201102.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201103.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201104.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201105.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201106.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201107.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201108.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201109.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201110.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201111.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201112.nc",
-        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201201.nc"
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201901.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201902.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201903.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201904.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201905.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201906.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201907.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201908.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201909.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201910.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201911.nc",
+        r"/backupdata/data_EPA/EQUATES/o3_hourly_files/EQUATES_COMBINE_ACONC_O3_201912.nc",
     ]
 
     # 使用占位符 {year} 表示年份
@@ -270,10 +269,13 @@ if __name__ == "__main__":
     time_region_file = r"output/Region/MonitorsTimeRegion_Filter_ST.csv"  # 请替换为实际的TimeRegion文件路径
 
     # 指定日期范围
-    start_date = '2011/03/01 00:00'
-    end_date = '2011/11/01 08:00'
+    # start_date = '2019/03/01 00:00'
+    # end_date = '2019/11/01 08:00'
 
-    daily_output_path = os.path.join(save_path, "2011_HourlyData_Limit.csv")
+    start_date = '2019/03/01 00:00'
+    end_date = '2019/03/01 00:00'
+
+    daily_output_path = os.path.join(save_path, "2019_HourlyData_Limit_0301.csv")
     start_hourly_data_fusion(
         model_files,
         monitor_file_template,
@@ -281,7 +283,7 @@ if __name__ == "__main__":
         time_region_file,
         daily_output_path,
         monitor_pollutant="O3",
-        model_pollutant="O3",
+        model_pollutant="ANO3_PPB",
         start_date=start_date,
         end_date=end_date,
     )

@@ -1,54 +1,52 @@
-import pandas as pd
-import numpy as np
-import itertools
+# import pandas as pd
+# import numpy as np
+# import itertools
 
-# 数据文件路径
-data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Timeseries/thiel_sen_slope_results.csv'
+# # 数据文件路径
+# data_path = '/DeepLearning/mnt/shixiansheng/data_fusion/output/Timeseries/thiel_sen_slope_results.csv'
 
-# 读取数据文件
-df = pd.read_csv(data_path)
+# # 读取数据文件
+# df = pd.read_csv(data_path)
 
-# # 指定要提取数据的 Period 值
-target_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep']
-target_periods = ['top-10']
+# # # 指定要提取数据的 Period 值
+# target_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep','top-10']
 
-# 指定要提取的列
-target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone','ds_ozone','harvard_ml']
-# target_columns = ['SD']
-# target_columns = ['Missing']
+# # 指定要提取的列
+# target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone','ds_ozone','harvard_ml']
+# # target_columns = ['Missing']
 
-# 提取对应 Period 和列的数据
-extracted_data = df[df['Period'].isin(target_periods)][target_columns]
+# # 提取对应 Period 和列的数据
+# extracted_data = df[df['Period'].isin(target_periods)][target_columns]
 
-# 将指定列的数据合并为一个一维数组
-combined_data = extracted_data.values.flatten()
+# # 将指定列的数据合并为一个一维数组
+# combined_data = extracted_data.values.flatten()
 
-# 定义默认的最大值和最小值（可根据需要修改）
-default_max_value = None
-default_min_value = None
+# # 定义默认的最大值和最小值（可根据需要修改）
+# default_max_value = None
+# default_min_value = None
 
-# 计算 99.5 分位值
-vmax_conc = (
-    np.nanpercentile(combined_data, 99.5)
-    if default_max_value is None
-    else default_max_value
-)
+# # 计算 99.5 分位值
+# vmax_conc = (
+#     np.nanpercentile(combined_data, 99.5)
+#     if default_max_value is None
+#     else default_max_value
+# )
 
-# 计算 0.5 分位值
-vmin_conc = (
-    np.nanpercentile(combined_data, 0.5)
-    if default_min_value is None
-    else default_min_value
-)
+# # 计算 0.5 分位值
+# vmin_conc = (
+#     np.nanpercentile(combined_data, 0.5)
+#     if default_min_value is None
+#     else default_min_value
+# )
 
-# 计算整体数据的最大值和最小值
-overall_max = np.nanmax(combined_data)
-overall_min = np.nanmin(combined_data)
+# # 计算整体数据的最大值和最小值
+# overall_max = np.nanmax(combined_data)
+# overall_min = np.nanmin(combined_data)
 
-print("整体数据的 99.5 分位值：", vmax_conc)
-print("整体数据的 0.5 分位值：", vmin_conc)
-print("整体数据的最大值：", overall_max)
-print("整体数据的最小值：", overall_min)
+# print("整体数据的 99.5 分位值：", vmax_conc)
+# print("整体数据的 0.5 分位值：", vmin_conc)
+# print("整体数据的最大值：", overall_max)
+# print("整体数据的最小值：", overall_min)
 
 # # 生成所有可能的列对
 # variables = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone', 'harvard_ml']
@@ -138,83 +136,86 @@ print("整体数据的最小值：", overall_min)
 #     print(f"错误: 发生了未知错误: {e}")
     
 
-# import pandas as pd
-# import numpy as np
+import pandas as pd
+import numpy as np
 
-# # 初始化一个空的 DataFrame 用于存储结果
-# result_df = pd.DataFrame(columns=['Year', 'Period', '0.5th', '99.5th', 'Min', 'Max'])
+# 初始化一个空的 DataFrame 用于存储结果
+result_df = pd.DataFrame(columns=['Year', 'Period', '0.5th', '99.5th', 'Min', 'Max'])
 
-# # 定义要处理的年份范围
-# years = [2016,2019]
+# 定义要处理的年份范围
+years = [2002,2003,2004,2005,2006,2007,2008,2009,2010,
+        2011,2012,2013,2014,2015,2016,2017,2018,2019]
 
-# # 定义要提取的列
-# target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone', 'harvard_ml']
+# 定义要提取的列
+target_columns = ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone']
+target_columns = ['CV']
 
-# for year in years:
-#     data_path = f'/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV_Delta/{year}-2002_Data_WithoutCV_Metrics.csv'
-#     try:
-#         # 读取数据文件
-#         df = pd.read_csv(data_path)
+for year in years:
+    # data_path = f'/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV_Delta/{year}-2002_Data_WithoutCV_Metrics.csv'
+    data_path = f'/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/{year}_CVSD_HourlyMetrics.csv'
+    try:
+        # 读取数据文件
+        df = pd.read_csv(data_path)
 
-#         # 处理 not top-10 的 Period
-#         non_top_10_periods = [period for period in df['Period'].unique() if period != 'top-10']
-#         if non_top_10_periods:
-#             available_columns = [col for col in target_columns if col in df.columns]
-#             extracted_data = df[df['Period'].isin(non_top_10_periods)][available_columns]
-#             combined_data = extracted_data.values.flatten()
-#             vmin_conc = np.nanpercentile(combined_data, 0.5)
-#             vmax_conc = np.nanpercentile(combined_data, 99.5)
-#             overall_min = np.nanmin(combined_data)
-#             overall_max = np.nanmax(combined_data)
-#             result_df = pd.concat([result_df, pd.DataFrame({
-#                 'Year': [year],
-#                 'Period': ['not top-10'],
-#                 '0.5th': [vmin_conc],
-#                 '99.5th': [vmax_conc],
-#                 'Min': [overall_min],
-#                 'Max': [overall_max]
-#             })], ignore_index=True)
+        # 处理 not top-10 的 Period
+        non_top_10_periods = [period for period in df['Period'].unique() if period != 'top-10']
+        if non_top_10_periods:
+            available_columns = [col for col in target_columns if col in df.columns]
+            extracted_data = df[df['Period'].isin(non_top_10_periods)][available_columns]
+            combined_data = extracted_data.values.flatten()
+            vmin_conc = np.nanpercentile(combined_data, 0.5)
+            vmax_conc = np.nanpercentile(combined_data, 99.5)
+            overall_min = np.nanmin(combined_data)
+            overall_max = np.nanmax(combined_data)
+            result_df = pd.concat([result_df, pd.DataFrame({
+                'Year': [year],
+                'Period': ['not top-10'],
+                '0.5th': [vmin_conc],
+                '99.5th': [vmax_conc],
+                'Min': [overall_min],
+                'Max': [overall_max]
+            })], ignore_index=True)
 
-#         # 处理 top-10 Period
-#         if 'top-10' in df['Period'].values:
-#             available_columns = [col for col in target_columns if col in df.columns]
-#             extracted_data = df[df['Period'] == 'top-10'][available_columns]
-#             combined_data = extracted_data.values.flatten()
-#             vmin_conc = np.nanpercentile(combined_data, 0.5)
-#             vmax_conc = np.nanpercentile(combined_data, 99.5)
-#             overall_min = np.nanmin(combined_data)
-#             overall_max = np.nanmax(combined_data)
-#             result_df = pd.concat([result_df, pd.DataFrame({
-#                 'Year': [year],
-#                 'Period': ['top-10'],
-#                 '0.5th': [vmin_conc],
-#                 '99.5th': [vmax_conc],
-#                 'Min': [overall_min],
-#                 'Max': [overall_max]
-#             })], ignore_index=True)
+        # 处理 top-10 Period
+        if 'top-10' in df['Period'].values:
+            available_columns = [col for col in target_columns if col in df.columns]
+            extracted_data = df[df['Period'] == 'top-10'][available_columns]
+            combined_data = extracted_data.values.flatten()
+            vmin_conc = np.nanpercentile(combined_data, 0.5)
+            vmax_conc = np.nanpercentile(combined_data, 99.5)
+            overall_min = np.nanmin(combined_data)
+            overall_max = np.nanmax(combined_data)
+            result_df = pd.concat([result_df, pd.DataFrame({
+                'Year': [year],
+                'Period': ['top-10'],
+                '0.5th': [vmin_conc],
+                '99.5th': [vmax_conc],
+                'Min': [overall_min],
+                'Max': [overall_max]
+            })], ignore_index=True)
 
-#     except FileNotFoundError:
-#         print(f"未找到 {data_path} 文件，跳过该年份。")
+    except FileNotFoundError:
+        print(f"未找到 {data_path} 文件，跳过该年份。")
 
-# # 按 Period 和 Year 排序
-# result_df = result_df.sort_values(by=['Period', 'Year'])
+# 按 Period 和 Year 排序
+result_df = result_df.sort_values(by=['Period', 'Year'])
 
-# # 计算每个 Period 下各年份的均值
-# mean_df = result_df.groupby('Period')[['0.5th', '99.5th', 'Min', 'Max']].mean()
-# mean_df['Year'] = 'Mean'
-# mean_df.reset_index(inplace=True)
+# 计算每个 Period 下各年份的均值
+mean_df = result_df.groupby('Period')[['0.5th', '99.5th', 'Min', 'Max']].mean()
+mean_df['Year'] = 'Mean'
+mean_df.reset_index(inplace=True)
 
-# # 将均值行插入到每个 Period 的末尾
-# new_result_df = pd.DataFrame()
-# for period in result_df['Period'].unique():
-#     period_df = result_df[result_df['Period'] == period]
-#     mean_row = mean_df[mean_df['Period'] == period]
-#     new_result_df = pd.concat([new_result_df, period_df, mean_row], ignore_index=True)
+# 将均值行插入到每个 Period 的末尾
+new_result_df = pd.DataFrame()
+for period in result_df['Period'].unique():
+    period_df = result_df[result_df['Period'] == period]
+    mean_row = mean_df[mean_df['Period'] == period]
+    new_result_df = pd.concat([new_result_df, period_df, mean_row], ignore_index=True)
 
-# # 输出结果表格
-# print(new_result_df)
+# 输出结果表格
+print(new_result_df)
 
-# # 保存结果到 CSV 文件（可选）
-# new_result_df.to_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV_Delta/2019 and 2016 PictureRadius.csv', index=False)
+# 保存结果到 CSV 文件（可选）
+new_result_df.to_csv('/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/PictureRadius_CV.csv', index=False)
     
         

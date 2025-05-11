@@ -109,8 +109,8 @@ def plot_us_map(
         print("Could not extract year from the filename.")
         return
 
-    save_path = os.path.join("/DeepLearning/mnt/shixiansheng/data_fusion/output", f"{year}_AloneMap")
-    merged_path = os.path.join("/DeepLearning/mnt/shixiansheng/data_fusion/output", "Merged")
+    save_path = os.path.join("/DeepLearning/mnt/shixiansheng/data_fusion/output/AloneMap", f"{year}_AloneMap")
+    merged_path = os.path.join("/DeepLearning/mnt/shixiansheng/data_fusion/output", "Merged_DailyIntoMetrics_Alone")
     try:
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -150,7 +150,7 @@ def plot_us_map(
             value_range = variable_settings['settings'].get('value_range')
             if key_period == 'top-10':
                 # 这里设置 top-10 周期的独立 value_range，可根据需要修改
-                value_range = (46.10, 84.78)  
+                value_range = (44.8, 87.9)  
             elif value_range is None:
                 vmax_conc = np.nanpercentile(grid_concentration, 99.5)
                 vmin_conc = np.nanpercentile(grid_concentration, 0.5)
@@ -205,7 +205,7 @@ def plot_us_map(
             for period in combination:
                 images = []
                 period_label = f"{year}_{period}"
-                for variable in ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone']:
+                for variable in ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone','harvard_ml']:
                 # for variable in ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone']:
                     dataset_label = get_dataset_label(variable, fusion_output_file)
                     title = f"{period_label}: {dataset_label}"
@@ -246,15 +246,12 @@ def plot_us_map(
 
 if __name__ == "__main__":
     model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
-    file_list = ["/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/2017_Data_WithoutCV_Metrics.csv",
-                 "/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/2018_Data_WithoutCV_Metrics.csv",
-                 "/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/2019_Data_WithoutCV_Metrics.csv",]
+    file_list = ["/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV/2011_Data_WithoutCV_Metrics.csv",]
 
     # special metrics
     # key_periods = ['DJF']
     # key_periods = ['W126']
-    key_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep']
-    key_periods =['top-10']
+    key_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep','top-10']
 
     common_settings = {
         'unit': "ppbv",
@@ -268,7 +265,7 @@ if __name__ == "__main__":
        'show_dependenct_colorbar': True,
        'show_domain_mean': True,
        'show_grid_line': True,
-        'value_range': (40, 87),
+        'value_range': (24.5, 60.45),
         # 'value_range': (None,None),
     }
 

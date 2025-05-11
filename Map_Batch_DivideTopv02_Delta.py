@@ -17,6 +17,7 @@ from esil.map_helper import get_multiple_data, show_maps
 import cmaps
 
 cmap_conc = cmaps.WhiteBlueGreenYellowRed
+cmaq_conc = cmaps.ViBlGrWhYeOrRe
 
 
 def extract_key_period(period):
@@ -150,7 +151,8 @@ def plot_us_map(
             value_range = variable_settings['settings'].get('value_range')
             if key_period == 'top-10':
                 # 这里设置 top-10 周期的独立 value_range，可根据需要修改
-                value_range = (-37, 6.5)  
+                # value_range = (-37, 6.5)
+                value_range = (-35,35)  
             elif value_range is None:
                 vmax_conc = np.nanpercentile(grid_concentration, 99.5)
                 vmin_conc = np.nanpercentile(grid_concentration, 0.5)
@@ -205,7 +207,7 @@ def plot_us_map(
             for period in combination:
                 images = []
                 period_label = f"{year}-2002_{period}"
-                for variable in ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone','harvard_ml']:
+                for variable in ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone']:
                 # for variable in ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone']:
                     dataset_label = get_dataset_label(variable, fusion_output_file)
                     title = f"{period_label}: {dataset_label}"
@@ -246,7 +248,7 @@ def plot_us_map(
 
 if __name__ == "__main__":
     model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
-    file_list = ["/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV_Delta/2016-2002_Data_WithoutCV_Metrics.csv"]
+    file_list = ["/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_WithoutCV_Delta/2019-2002_Data_WithoutCV_Metrics.csv"]
                  
     
 
@@ -257,7 +259,7 @@ if __name__ == "__main__":
 
     common_settings = {
         'unit': "ppbv",
-        'cmap_conc': cmaps.WhiteBlueGreenYellowRed,
+        'cmap_conc': cmaps.ViBlGrWhYeOrRe,
        'show_lonlat': True,
         'is_wrf_out_data': True,
        'show_original_grid': True,
@@ -267,12 +269,13 @@ if __name__ == "__main__":
        'show_dependenct_colorbar': True,
        'show_domain_mean': True,
        'show_grid_line': True,
-        'value_range': (-19.2, 10.3),
+        # 'value_range': (-19.2, 10.3),
+        'value_range': (-20, 20),
         # 'value_range': (None,None),
     }
 
     variable_settings = {
-        'variables': ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone', 'harvard_ml'],
+        'variables': ['model', 'vna_ozone', 'evna_ozone', 'avna_ozone', 'ds_ozone'],
         # 'variables': ['model'],
        'settings': common_settings
     }
