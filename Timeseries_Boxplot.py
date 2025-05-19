@@ -185,7 +185,7 @@ def plot_boxplots(data, output_dir='/DeepLearning/mnt/shixiansheng/data_fusion/o
         plt.ylabel('2019-2002 O₃ (ppbv)', labelpad=15)
 
         # 设置Y轴范围
-        plt.ylim(-40, 21)
+        plt.ylim(-140, 30)
 
         # 添加水平线表示y=0
         # plt.axhline(y=0, color='r', linestyle='--', alpha=0.5)
@@ -233,7 +233,7 @@ def main():
 
         # 指定要绘制的Periods
         period_columns = ['DJF','MAM', 'JJA', 'SON', 'Annual','Apr-Sep']
-        # period_columns = ['top-10']
+        period_columns = ['top-10']
 
         # 合并和处理数据
         merged_data = merge_and_process_data(df_2002, df_delta, selected_periods=period_columns)

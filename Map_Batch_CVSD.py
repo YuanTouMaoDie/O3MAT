@@ -143,13 +143,13 @@ def plot_us_map(
 
             # 根据周期设置 value_range
             value_range = variable_settings['settings'].get('value_range')
-            if key_period == 'top-10':
-                # 这里设置 top-10 周期的独立 value_range，可根据需要修改
-                value_range = (0, 7)
-            elif value_range is None:
-                vmax_conc = np.nanpercentile(grid_concentration, 99.5)
-                vmin_conc = np.nanpercentile(grid_concentration, 0.5)
-                value_range = (vmin_conc, vmax_conc)
+            # if key_period == 'top-10':
+            #     # 这里设置 top-10 周期的独立 value_range，可根据需要修改
+            #     value_range = (0, 20)
+            # elif value_range is None:
+            #     vmax_conc = np.nanpercentile(grid_concentration, 99.5)
+            #     vmin_conc = np.nanpercentile(grid_concentration, 0.5)
+            #     value_range = (vmin_conc, vmax_conc)
 
             dataset_label = get_dataset_label(variable, fusion_output_file)
             title = f"{period_label}: {dataset_label}"
@@ -188,8 +188,8 @@ def plot_us_map(
                 print(f"The data fusion plot for {title} is saved to {save_file}")
 
     if merge_enabled:
-        season_periods = ['W126']
-        other_periods = ['']
+        season_periods = ['DJF', 'MAM', 'JJA', 'SON']
+        other_periods = ['Apr-Sep', 'Annual', 'top-10']
 
         for variable in variable_settings['variables']:
             # 合并 DJF、MAM、JJA、SON
@@ -273,33 +273,17 @@ def plot_us_map(
 
 if __name__ == "__main__":
     model_file = r"/backupdata/data_EPA/EQUATES/EQUATES_data/HR2DAY_LST_ACONC_v532_cb6r3_ae7_aq_WR413_MYR_STAGE_2011_12US1_2011.nc"
-    file_list = ["/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2018_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2019_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2002_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2003_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2004_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2005_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2006_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2007_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2008_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2009_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2010_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2012_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2013_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2014_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2015_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2016_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2017_CVSD_HourlyMetrics.csv",
-                  "/DeepLearning/mnt/shixiansheng/data_fusion/output/HourlyData_WithoutCV/2018_CVSD_HourlyMetrics.csv",]
+    file_list = ["/DeepLearning/mnt/shixiansheng/data_fusion/output/DailyData_CVSD/2011_CVSD_DailyMetrics.csv",]
 
     # special metrics
     # key_periods = ['DJF']
     # key_periods = ['W126']
     key_periods = ['DJF', 'MAM', 'JJA', 'SON', 'Annual', 'Apr-Sep', 'top-10']
-    key_periods = ['top-10']
+    # key_periods = ['top-10']
 
     common_settings = {
-        'unit': "ppbv",
+        'unit': "%",
+        # 'unit':'ppbv',
         'cmap_conc': cmaps.WhiteBlueGreenYellowRed,
        'show_lonlat': True,
         'is_wrf_out_data': True,
@@ -310,12 +294,13 @@ if __name__ == "__main__":
        'show_dependenct_colorbar': True,
        'show_domain_mean': True,
        'show_grid_line': True,
-        'value_range': (0, 7),
+        'value_range': (0, 20),
         # 'value_range': (None,None),
     }
 
     variable_settings = {
-        'variables': ['SD'],
+        'variables': ['CV'],
+        # 'variables': ['SD'],
        'settings': common_settings
     }
 
